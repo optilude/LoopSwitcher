@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="105mm" height="48mm" viewBox="0 0 105 48">
+<title>1590D – Side D (Bottom) – 105×48mm artboard</title>
+<desc>Drill template artboard generated from a Tayda drill-service export. Origin at panel center; +X right, +Y up in the source data, converted here to SVG top-left coordinates. 1 SVG unit = 1mm.</desc>
+<g id="artboard">
+<rect x="0" y="0" width="105" height="48" fill="#ffffff" stroke="#111111" stroke-width="0.3"/>
+</g>
+<g id="guides">
+<g stroke="#00a8c9" stroke-width="0.08" opacity="0.45">
+<line x1="0" y1="0" x2="0" y2="48"/>
+<line x1="10" y1="0" x2="10" y2="48"/>
+<line x1="20" y1="0" x2="20" y2="48"/>
+<line x1="30" y1="0" x2="30" y2="48"/>
+<line x1="40" y1="0" x2="40" y2="48"/>
+<line x1="50" y1="0" x2="50" y2="48"/>
+<line x1="60" y1="0" x2="60" y2="48"/>
+<line x1="70" y1="0" x2="70" y2="48"/>
+<line x1="80" y1="0" x2="80" y2="48"/>
+<line x1="90" y1="0" x2="90" y2="48"/>
+<line x1="100" y1="0" x2="100" y2="48"/>
+<line x1="0" y1="0" x2="105" y2="0"/>
+<line x1="0" y1="10" x2="105" y2="10"/>
+<line x1="0" y1="20" x2="105" y2="20"/>
+<line x1="0" y1="30" x2="105" y2="30"/>
+<line x1="0" y1="40" x2="105" y2="40"/>
+</g>
+<g stroke="#e2493a" stroke-width="0.15" opacity="0.55">
+<line x1="52.5" y1="0" x2="52.5" y2="48"/>
+<line x1="0" y1="24" x2="105" y2="24"/>
+</g>
+</g>
+<g id="shapes" fill="none" stroke="#1463a8" stroke-width="0.3">
+</g>
+<g id="holes" fill="none" stroke="#c23c1f" stroke-width="0.3">
+<circle cx="34.5" cy="27" r="6"><title>⌀12mm at (-18, -3)</title></circle>
+<circle cx="52.5" cy="27" r="6"><title>⌀12mm at (0, -3)</title></circle>
+</g>
+</svg>

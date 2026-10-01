@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="113mm" height="182mm" viewBox="0 0 113 182">
+<title>1590D – Side A (Face) – 113×182mm artboard</title>
+<desc>Drill template artboard generated from a Tayda drill-service export. Origin at panel center; +X right, +Y up in the source data, converted here to SVG top-left coordinates. 1 SVG unit = 1mm.</desc>
+<g id="artboard">
+<rect x="0" y="0" width="113" height="182" fill="#ffffff" stroke="#111111" stroke-width="0.3"/>
+</g>
+<g id="shapes" fill="none" stroke="#1463a8" stroke-width="0.3">
+<line x1="13.15" y1="125.79" x2="31.85" y2="125.79"/>
+<line x1="13.15" y1="160.21" x2="13.15" y2="125.79"/>
+<line x1="31.85" y1="160.21" x2="31.85" y2="125.79"/>
+<line x1="13.15" y1="160.21" x2="31.85" y2="160.21"/>
+</g>
+<g id="holes" fill="none" stroke="#c23c1f" stroke-width="0.3">
+<circle cx="16.97" cy="170" r="2.5"><title>⌀5mm at (-39.53, -79)</title></circle>
+<circle cx="16.97" cy="116" r="3.25"><title>⌀6.5mm at (-39.53, -25)</title></circle>
+<circle cx="30.5" cy="116" r="2.5"><title>⌀5mm at (-26, -25)</title></circle>
+<circle cx="96.5" cy="23.5" r="6.2"><title>⌀12.4mm at (40, 67.5)</title></circle>
+<circle cx="96.5" cy="68.5" r="6.2"><title>⌀12.4mm at (40, 22.5)</title></circle>
+<circle cx="96.5" cy="113.5" r="6.2"><title>⌀12.4mm at (40, -22.5)</title></circle>
+<circle cx="96.5" cy="158.5" r="6.2"><title>⌀12.4mm at (40, -67.5)</title></circle>
+<circle cx="56.5" cy="23.5" r="6.2"><title>⌀12.4mm at (0, 67.5)</title></circle>
+<circle cx="56.5" cy="68.5" r="6.2"><title>⌀12.4mm at (0, 22.5)</title></circle>
+<circle cx="56.5" cy="113.5" r="6.2"><title>⌀12.4mm at (0, -22.5)</title></circle>
+<circle cx="56.5" cy="158.5" r="6.2"><title>⌀12.4mm at (0, -67.5)</title></circle>
+<circle cx="96.5" cy="150.8" r="1.5"><title>⌀3mm at (40, -59.8)</title></circle>
+<circle cx="96.5" cy="105.7" r="1.5"><title>⌀3mm at (40, -14.7)</title></circle>
+<circle cx="96.5" cy="76.3" r="1.5"><title>⌀3mm at (40, 14.7)</title></circle>
+<circle cx="96.5" cy="31.2" r="1.5"><title>⌀3mm at (40, 59.8)</title></circle>
+<circle cx="56.5" cy="150.8" r="1.5"><title>⌀3mm at (0, -59.8)</title></circle>
+<circle cx="56.5" cy="105.7" r="1.5"><title>⌀3mm at (0, -14.7)</title></circle>
+<circle cx="56.5" cy="76.3" r="1.5"><title>⌀3mm at (0, 14.7)</title></circle>
+<circle cx="56.5" cy="31.2" r="1.5"><title>⌀3mm at (0, 59.8)</title></circle>
+</g>
+</svg>
