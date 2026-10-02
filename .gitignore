@@ -1,0 +1,26 @@
+# Agents
+
+.claude/
+.agents/
+
+# macOS
+.DS_Store
+
+# Python virtual environment that holds PlatformIO, and Python byte code
+.venv/
+__pycache__/
+*.py[cod]
+
+# PlatformIO: build output, downloaded libraries, and the optional compile database
+.pio/
+compile_commands.json
+
+# VS Code: PlatformIO generates these with absolute paths for this machine.
+# .vscode/extensions.json (the recommended extensions) stays tracked.
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch/
+.vscode/.browse.c_cpp.db*
+
+# Serial monitor logs
+*.log
