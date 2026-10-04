@@ -1,6 +1,6 @@
 # LoopSwitcher
 
-A DIY project to create an an eight-loop guitar effects switcher. Fully open source hardware and software.
+A DIY project to create an eight-loop guitar effects switcher with fully open-source hardware and software.
 
 ## Features
 
@@ -19,13 +19,13 @@ There are two PCBs:
 - The Control PCB hosts an Arduino Nano Every microcontroller, 1.3" OLED screen, and the input encoder and buttons.
 - The Audio PCB contains the switches, relays, and footswitch/LED connections.
 
-Both are powered from a 9V centre-negetaive "pedal" power supply, and are indepenent save for three wires that use the I2C bus protocol to effect the relays and LEDs and read footswitch states.
+Both are powered from a 9V centre-negative "pedal" power supply and are independent, apart from three wires carrying the I2C bus signals used to control the relays and LEDs and read the footswitch states.
 
 The PCBs are designed to be manufactured and partially assembled by JLCPCB. You need to order and hand-solder a handful of through-hole components, and run wires to the external jacks.
 
-The unit fits in a Hamond 1590D type enclosure. Files are included to order a suitable enclosure from Tayda Electronics, including painting, drilling, and UV printing on the face.
+The unit fits in a Hammond 1590D-type enclosure. Files are included for ordering a suitable enclosure from Tayda Electronics, including painting, drilling, and UV printing on the face.
 
-This repository contains the code required to build and flash the firmware onto the Arduino Nano Every.
+This repository contains the code required to build and flash the firmware onto an Arduino Nano Every.
 
 ## Repository layout
 
@@ -33,7 +33,7 @@ This repository contains the code required to build and flash the firmware onto 
 |---|---|
 | `Circuit/` | EasyEDA Pro project, schematics and board PDFs/PNGs, Gerber zips for both PCBs |
 | `Tayda/` | Enclosure drill template and artwork |
-| `src/`, `include/` | Firmware (`main.cpp` plus the four modules) and hardware test sketches |
+| `src/`, `include/` | Firmware and hardware test sketches |
 | `test/` | Native unit tests |
 | `SPEC-*.md`, `CAPABILITY-MAP.md`, `tasks/` | Design specs and implementation plans |
 
@@ -61,7 +61,7 @@ These are generally through-hole components and wires that need to be hand-solde
 For the control PCB:
 
 - 1 x [Arduino Nano Every](https://www.amazon.co.uk/dp/B07WWK29XF?ref=nb_sb_ss_w_as-reorder_k0_1_18&amp=&crid=K8FPMY45GMY7&sprefix=arduino%2Bnano%2Bevery&th=1) – the brains of the operation. You probably want one with headers pre-soldered, but note that there won't be enough space for female sockets on the PCB and male pins on the Arduino. You'll need to solder it directly to the board.
-- 1 x [1.3" OLED module](https://www.amazon.co.uk/dp/B07QJ4LGC2?ref=ppx_yo2ov_dt_b_fed_asin_title) - it's important to get one in this form factor, with four pins – GND VCC SCL SCA – in the correct order, using the SSH1106 chip and the I2C interface. (You may find ohers with the same footprint but GND and VCC the other way around, which won't work).
+- 1 x [1.3" OLED module](https://www.amazon.co.uk/dp/B07QJ4LGC2?ref=ppx_yo2ov_dt_b_fed_asin_title) - it's important to get one in this form factor, with four pins - GND, VCC, SCL, and SDA - in the correct order, using the SH1106 chip and the I2C interface. (You may find others with the same footprint but with GND and VCC the other way around, which won't work.)
 - 1 x [Bourns PEC11R-4220K-S0024](https://www.rapidonline.com/bourns-pec11r-4220k-s0024-rotary-encoder-robust-compact-high-reliability-08-6435) - a rotary encoder with a click button, used to navigate the menu system.
 - 1 x [knob for the rotary encoder](https://www.taydaelectronics.com/black-micro-knob-7-6x14mm-shaft-6x18t.html) - this one is nice and small, but other options are available!
 - 2 x [C&K 8631ZGD2](https://www.rapidonline.com/c-k-switches-8631zgd2-pushbutton-switch-spst-120v-28v-500ma-panel-mount-08-7116) - subminiature momentary switches, used for the "Mode" and "Back" buttons.
@@ -85,7 +85,7 @@ Other parts:
 
 - 2 x [9-pin single-row 2.54mm male headers](https://www.taydaelectronics.com/9-pin-2-54-mm-single-row-pin-header-strip.html) - used for the LED and footswitch connections. You can also solder wires directly to the board, but with headers you can use Dupont wires for the connections, which is much easier.
 - 4 x 2-pin single-row 2.54mm male headers. Used for 9V and audio connections, if desired. You can also solder directly to the through-hole pads. You may need angled headers for the control PCB 9V connection.
-- Dupont jumper wires - useful for wiring the boards together.
+- [Dupont jumper wires](https://www.amazon.co.uk/ELEGOO-Multicolored-Compatible-Arduino-Projects-Yellow-White-Green-Red-Black/dp/B01EV70C78/ref=sr_1_2_sspa) - useful for wiring the boards together.
 - Regular wire for the input and output jacks and foot switches.
 
 ## 3. Order the enclosure
@@ -106,7 +106,7 @@ Next, insert the rotary encoder. It should snap into place. Don't solder it yet 
 
 Remove the nuts from the two switches. Try to thread them through the enclosure and fix with the supplied nut. This might not work – the threaded bushing is likely slightly too short.
 
-The solution to this is to _carefully_ remove a bit of material from the inside of the enclosure. Place the enclosure upside-down on a soft surface (to avoid scratching off the UV design) and _carefully_ use a 10mm+ metal drill bit to enlarge and deepen the inside of the two small holes for the "back" and "mode" buttons. You want to drill half a mm, then check, then drill more if necessary. You definitely don't want to go all the way through, and if you go too far you'll struggle to insert the legs of the switch into the PCB. Once you are just about able to get the nut on securely, stop. Leave thes switches in the enclosure, with the legs orientated vertically in the way they will insert into the PCB (it doesn't matter which is left or right).
+The solution to this is to _carefully_ remove a bit of material from the inside of the enclosure. Place the enclosure upside down on a soft surface (to avoid scratching the UV design) and _carefully_ use a 10 mm or larger metal drill bit to enlarge and deepen the inside of the two small holes for the "Back" and "Mode" buttons. You want to drill half a millimetre, then check, then drill more if necessary. You definitely don't want to go all the way through, and if you go too far you'll struggle to insert the switch legs into the PCB. Once you are just about able to get the nut on securely, stop. Leave the switches in the enclosure, with the legs oriented vertically in the way they will insert into the PCB (it doesn't matter which is left or right).
 
 ![Enclosure drilling to fit switches](Images/enclosure-drillout.jpg)
 
@@ -118,7 +118,7 @@ Put some electrical tape on the inside of the enclosure where the Arduino will g
 
 ![Test fitting](Images/enclosure-testfit-1.jpeg)
 
-Check from the other side that the screen is aligned with its cutout and everything is in place. It might be necessary to take the OLED out and gently bend its legs to move it up or down a milimetre or two, depending on which manufacturer you ordered from.
+Check from the other side that the screen is aligned with its cutout and everything is in place. It might be necessary to take the OLED out and gently bend its legs to move it up or down a millimetre or two, depending on which manufacturer you ordered from.
 
 ![Testing fitting](Images/enclosure-testfit-2.jpeg)
 
@@ -138,7 +138,7 @@ Next insert each of the relays. The "stripe" side is up, towards the jacks. Sold
 
 Next, insert rows of 9 male header pins into the footswitch and LED pads. You can solder the wires in directly, but it's much easier to be able to disconnect and reconnect the board. Solder a single pin first, and ensure the whole row is soldered perpendicularly to the board, then do the rest.
 
-Repeat this process for the row of 3 pins labelled "INT SCL SDA". This row matches the equivalent row in the control PCB, and it's helpful to know that they are also in the same order left to right on both boards. These are the wires that allow the control PCB to manage the relays and LEDs and receive foot switch inputs.
+Repeat this process for the row of three pins labelled "INT SCL SDA". This row matches the equivalent row on the control PCB, and it is helpful to know that the pins are also in the same order from left to right on both boards. These wires allow the control PCB to manage the relays and LEDs and receive footswitch inputs.
 
 If you want, do the same for the 9V power.
 
@@ -156,15 +156,15 @@ You now need to ensure that one side (it doesn't matter which) of each footswitc
 
 One way to do this, is to run a ground bus wire (i.e. a stripped solid-core wire) through one side of each switch, and then run a single wire from the ground bus to a Dupont connector that can be inserted to the GND pin on the switches header row. You can then shorten, strip, and solder the black LED wires to the ground bus at the corresponding switch. This is much neater than running 16 ground wires to the board.
 
-For the other side of the footwich, you can use (or make) an 8-way Dupont ribbon cable that connects to the header row and fans out to each switch. This helps ensure the switches are all connected to the correct pins in the correct order. Of course, there's nothing wrong with using eight individual wires either.
+For the other side of the footswitch, you can use (or make) an 8-way Dupont ribbon cable that connects to the header row and fans out to each switch. This helps ensure the switches are all connected to the correct pins in the correct order. Of course, there's nothing wrong with using eight individual wires either.
 
-Similarly, the red LED wires can be crimped to an 8-way female Dupont conenctor, for use on the LEDs headers.
+Similarly, the red LED wires can be crimped to an 8-way female Dupont connector for use on the LED header.
 
 ![Foot switches and LEDs positioned](Images/outboard-wired.jpeg)
 
 Note that if you do it this way, you may have an unused GND pin, since the LED grounds are tied to the ground bus. You do need to ensure the ground bus is connected to one of the GND pins though!
 
-For the 9V power socket, ensure you know which side is ground and which is +9V, and solder in two wires to each. If using header pins, use Dupon wires and keep them in two pairs so you don't get them mixed up. Use a sensible colour choice to know which is ground and which is +9V. You don't want to reverse them!
+For the 9V power socket, ensure you know which side is ground and which is +9V, and solder in two wires to each. If using header pins, use Dupont wires and keep them in two pairs so you don't get them mixed up. Use sensible colours to distinguish ground from +9V. You don't want to reverse them!
 
 ### 4.4. Putting it all together
 
@@ -172,7 +172,7 @@ With all the elements soldered, it is worth using a multimeter to run suitable c
 
 Insert the power jack first. The jack threads in from the outside, but the nut needs to run over the wires and in from the back. Tighten it in place, but be careful not to ruin the plastic thread. Be certain you know which wires are ground and which are +9V.
 
-Insert the control PCB. Check alignment and then tighten the nuts on the encoder and two switches. Don't over-tigthen, but make sure it is a secure fit. The screen should not move when the buttons are pushed. Confirm orientation and insert the cables to the 9V power. You can connect a 9V battery or power supply briefly to check the screen and controls are working before you proceed further.
+Insert the control PCB. Check the alignment and then tighten the nuts on the encoder and two switches. Don't overtighten, but make sure it is secure. The screen should not move when the buttons are pushed. Confirm the orientation and connect the 9V power cables. You can connect a 9V battery or power supply briefly to check that the screen and controls are working before you proceed further.
 
 ![Assembling the power and control PCB (ignore the extra purple wire here!)](Images/assembly-step-1.jpeg)
 
@@ -182,7 +182,7 @@ Connect the various cables to the audio PCB. Carefully check that everything is 
 
 - Power - GND and +9V (confirm orientation!)
 - Audio input (buffered or true bypass) and output (likely soldered in place)
-- The three control wires - INT SCL SCA, in that order, left-to-right – running to the corresponding pins on the control PCB. 
+- The three control wires - INT, SCL, and SDA, in that order from left to right - running to the corresponding pins on the control PCB.
 - One ground wire from the footswitch/LED harness to either GND pin on the footswitches/LEDs header rows
 - Eight wires running from LED anodes (red wires) to the 8 LED pins. Check that you haven't accidentally connected the first one to the GND pin.
 - Eight wires running from the footswitches to the 8 footswitch pins. Again, confirm the right switch is connected to the numbered pin, noting they run from 8 to 1 left-to-right.
