@@ -55,6 +55,9 @@ For 0-based loop `i`: port = `i / 4` (0 = A, 1 = B); RST bit = `2 * (i % 4)`; SE
 - The Nano's GND was not connected to the PCB ground net, so the display, switches and encoder had no common ground. Fixed on this unit with a wire from the Nano's GND pin to the ground pad; fix the netlist in the next revision.
 - The I2C pins are `SDA`/`SCL` (PA2/PA3) in the Arduino core, while the header pins are labelled A4/A5. Measured: A4 (PF2) and SDA (PA2) read the same level, so they share the header pin. Use `Wire` as normal.
 
+**Errata found on the assembled pedal (audio PCB, 2026-10-03):**
+- In the schematic, C5 (U2) and C6 (U3) sit in series between the +5V flag and the MCP23017 VDD pin instead of between VDD and GND, so neither chip's VDD is connected to the +5V rail. Measured with the I2C lines connected: +5V side 5.04 V, VDD 4.7 V (U2) and 1.3 V (U3). The chips were only back-fed through input protection diodes (RESET#, A0, SDA/SCL), which is why U3 answered and U2 did not. Fix on the unit: wire VDD to +5V and add a 100 nF cap across VDD and VSS; fix the schematic and netlist in the next revision.
+
 ## Tech Stack
 
 - C++17, Arduino framework, PlatformIO

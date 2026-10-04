@@ -6,14 +6,15 @@ void PerformanceController::updateLeds(uint32_t nowMs) {
 }
 
 void PerformanceController::saveState(uint32_t nowMs) {
-    store_.setState(SavedState{loops_.stateMask(), mode_ == Mode::Preset, activePreset_}, nowMs);
+    store_.setState(SavedState{loops_.stateMask(), mode_ == Mode::Preset, activePreset_, mode_ == Mode::Perform}, nowMs);
 }
 
 bool PerformanceController::begin(bool dataReset) {
     const SavedState saved = store_.savedState();
-    mode_ = saved.presetMode ? Mode::Preset : Mode::Manual;
+    mode_ = saved.performMode ? Mode::Perform : saved.presetMode ? Mode::Preset : Mode::Manual;
     activePreset_ = saved.activePreset;
 
+    // Perform mode keeps the saved loops: they were changed by stomps after the preset was selected.
     uint8_t initial = saved.loopMask;
     if (mode_ == Mode::Preset && store_.presetUsed(activePreset_)) initial = store_.presetMask(activePreset_);
     const bool ok = loops_.begin(initial);
@@ -66,6 +67,15 @@ void PerformanceController::onFootswitch(uint8_t index, uint32_t nowMs) {
 }
 
 void PerformanceController::onFootswitches(uint8_t pressedMask, uint32_t nowMs) {
+    if (mode_ == Mode::Perform) {
+        for (uint8_t loop = 0; loop < kLoopCount; ++loop) {
+            if (!(pressedMask & (1u << loop))) continue;
+            pending_ |= static_cast<uint8_t>(1u << loop);
+            pressedAtMs_[loop] = nowMs;
+        }
+        return;
+    }
+
     if (mode_ == Mode::Manual) {
         for (uint8_t loop = 0; loop < kLoopCount; ++loop) {
             if (pressedMask & (1u << loop)) toggleLoop(loop, nowMs);
@@ -81,23 +91,63 @@ void PerformanceController::onFootswitches(uint8_t pressedMask, uint32_t nowMs) 
     }
 }
 
+void PerformanceController::longPress(uint8_t mask, uint32_t nowMs) {
+    for (int slot = kLoopCount - 1; slot >= 0; --slot) {
+        if (mask & (1u << slot)) {
+            selectPreset(static_cast<uint8_t>(slot), nowMs);
+            return;
+        }
+    }
+}
+
+void PerformanceController::onFootswitchesReleased(uint8_t releasedMask, uint32_t nowMs) {
+    if (mode_ != Mode::Perform) return;
+
+    uint8_t longMask = 0;
+    for (uint8_t loop = 0; loop < kLoopCount; ++loop) {
+        const uint8_t bit = static_cast<uint8_t>(1u << loop);
+        if (!(releasedMask & bit) || !(pending_ & bit)) continue;
+
+        pending_ &= static_cast<uint8_t>(~bit);
+        // tick() may not have run since the threshold passed.
+        if (nowMs - pressedAtMs_[loop] >= kPerformHoldMs) {
+            longMask |= bit;
+        } else {
+            toggleLoop(loop, nowMs);
+        }
+    }
+    longPress(longMask, nowMs);
+}
+
 void PerformanceController::toggleMode(uint32_t nowMs) {
-    if (mode_ == Mode::Manual) {
-        mode_ = Mode::Preset;
+    pending_ = 0;
+    if (mode_ == Mode::Perform) {
+        mode_ = Mode::Manual;
+    } else {
+        mode_ = mode_ == Mode::Manual ? Mode::Preset : Mode::Perform;
         if (store_.presetUsed(activePreset_)) {
             applyMask(store_.presetMask(activePreset_), nowMs);
         } else {
             notice_ = Notice::EmptyPreset;
         }
-    } else {
-        mode_ = Mode::Manual;
     }
     saveState(nowMs);
 }
 
-void PerformanceController::tick(uint32_t nowMs) {
+bool PerformanceController::tick(uint32_t nowMs) {
+    uint8_t longMask = 0;
+    if (mode_ == Mode::Perform) {
+        for (uint8_t loop = 0; loop < kLoopCount; ++loop) {
+            const uint8_t bit = static_cast<uint8_t>(1u << loop);
+            if ((pending_ & bit) && nowMs - pressedAtMs_[loop] >= kPerformHoldMs) longMask |= bit;
+        }
+        pending_ &= static_cast<uint8_t>(~longMask);
+        longPress(longMask, nowMs);
+    }
+
     store_.tick(nowMs);
     if (ledsStale_ && nowMs - lastLedTryMs_ >= kLedRetryMs) updateLeds(nowMs);
+    return longMask != 0;
 }
 
 Notice PerformanceController::takeNotice() {

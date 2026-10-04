@@ -49,6 +49,20 @@ void test_a_release_is_not_a_press_and_a_new_press_is_reported() {
     TEST_ASSERT_EQUAL_HEX8(0b00000100, r.input.poll(true, 300));
 }
 
+void test_a_release_is_reported_for_the_poll_that_saw_it() {
+    Rig r;
+    press(r.bus, 3);
+    r.input.poll(true, 100);
+    TEST_ASSERT_EQUAL_HEX8(0, r.input.releases());
+
+    release(r.bus, 3);
+    TEST_ASSERT_EQUAL_HEX8(0, r.input.poll(true, 200));
+    TEST_ASSERT_EQUAL_HEX8(0b00000100, r.input.releases());
+
+    r.input.poll(true, 300);  // nothing changed
+    TEST_ASSERT_EQUAL_HEX8(0, r.input.releases());
+}
+
 void test_nothing_is_read_without_an_interrupt_until_the_fallback_interval() {
     Rig r;
     press(r.bus, 1);
@@ -184,6 +198,7 @@ int main() {
     RUN_TEST(test_a_press_is_reported_once_at_its_leading_edge);
     RUN_TEST(test_switch_n_reports_loop_n);
     RUN_TEST(test_a_release_is_not_a_press_and_a_new_press_is_reported);
+    RUN_TEST(test_a_release_is_reported_for_the_poll_that_saw_it);
     RUN_TEST(test_nothing_is_read_without_an_interrupt_until_the_fallback_interval);
     RUN_TEST(test_an_interrupt_reads_immediately);
     RUN_TEST(test_contact_bounce_inside_the_lockout_gives_one_press);

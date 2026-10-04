@@ -110,7 +110,8 @@ void test_leaving_preset_mode_keeps_the_loops_and_footswitches_toggle_again() {
     rig.controller.toggleMode(0);
     rig.controller.onFootswitch(3, 0);
 
-    rig.controller.toggleMode(0);
+    rig.controller.toggleMode(0);  // perform
+    rig.controller.toggleMode(0);  // manual
     TEST_ASSERT_EQUAL(Mode::Manual, rig.controller.mode());
     TEST_ASSERT_EQUAL_HEX8(0b11110000, rig.loops.stateMask());
 

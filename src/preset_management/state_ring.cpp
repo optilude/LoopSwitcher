@@ -3,8 +3,9 @@
 namespace {
 constexpr uint8_t kCheckSalt = 0xA5;
 constexpr uint8_t kPresetModeBit = 0x80;
+constexpr uint8_t kPerformModeBit = 0x40;
 constexpr uint8_t kPresetIndexMask = 0x07;
-constexpr uint8_t kUnusedBits = 0x78;
+constexpr uint8_t kUnusedBits = 0x38;
 
 uint16_t slotAddr(uint8_t slot) { return kRingAddr + slot * kRingRecordSize; }
 
@@ -20,9 +21,11 @@ bool StateRing::readRecord(uint8_t slot, uint8_t& seq, SavedState& state) const 
     const uint8_t modePreset = eeprom_.read(base + 2);
     if (eeprom_.read(base + 3) != checkByte(seq, mask, modePreset)) return false;
     if (modePreset & kUnusedBits) return false;
+    if ((modePreset & kPresetModeBit) && (modePreset & kPerformModeBit)) return false;
 
     state.loopMask = mask;
     state.presetMode = (modePreset & kPresetModeBit) != 0;
+    state.performMode = (modePreset & kPerformModeBit) != 0;
     state.activePreset = modePreset & kPresetIndexMask;
     return true;
 }
@@ -55,6 +58,7 @@ void StateRing::append(const SavedState& state) {
     const uint8_t slot = hasRecord_ ? static_cast<uint8_t>((newestSlot_ + 1) % kRingRecords) : 0;
     const uint8_t seq = hasRecord_ ? static_cast<uint8_t>(newestSeq_ + 1) : 0;
     const uint8_t modePreset = static_cast<uint8_t>((state.presetMode ? kPresetModeBit : 0) |
+                                                    (state.performMode ? kPerformModeBit : 0) |
                                                     (state.activePreset & kPresetIndexMask));
 
     const uint16_t base = slotAddr(slot);
@@ -66,5 +70,6 @@ void StateRing::append(const SavedState& state) {
     hasRecord_ = true;
     newestSlot_ = slot;
     newestSeq_ = seq;
-    newest_ = SavedState{state.loopMask, state.presetMode, static_cast<uint8_t>(state.activePreset & kPresetIndexMask)};
+    newest_ = SavedState{state.loopMask, state.presetMode, static_cast<uint8_t>(state.activePreset & kPresetIndexMask),
+                         state.performMode};
 }

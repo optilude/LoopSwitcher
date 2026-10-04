@@ -20,6 +20,31 @@ static void assertState(const SavedState& expected, const SavedState& actual) {
 
 static uint16_t slotAddr(uint8_t slot) { return kRingAddr + slot * kRingRecordSize; }
 
+void test_perform_mode_round_trips_and_conflicts_with_preset_mode() {
+    FakeEeprom eeprom;
+    StateRing ring(eeprom);
+    ring.scan();
+    ring.append(SavedState{0x3C, false, 6, true});
+
+    StateRing reloaded(eeprom);
+    reloaded.scan();
+    SavedState out{};
+    TEST_ASSERT_TRUE(reloaded.load(out));
+    TEST_ASSERT_TRUE(out.performMode);
+    TEST_ASSERT_FALSE(out.presetMode);
+    TEST_ASSERT_EQUAL_UINT8(6, out.activePreset);
+
+    const uint8_t seq = 9, mask = 0x01, modePreset = 0xC0;  // preset and perform together
+    eeprom.update(slotAddr(7) + 0, seq);
+    eeprom.update(slotAddr(7) + 1, mask);
+    eeprom.update(slotAddr(7) + 2, modePreset);
+    eeprom.update(slotAddr(7) + 3, static_cast<uint8_t>(seq ^ mask ^ modePreset ^ 0xA5));
+    StateRing bad(eeprom);
+    bad.scan();
+    TEST_ASSERT_TRUE(bad.load(out));
+    TEST_ASSERT_EQUAL_HEX8(0x3C, out.loopMask);  // the impossible record was skipped
+}
+
 void test_an_erased_ring_has_no_record() {
     FakeEeprom eeprom;
     StateRing ring(eeprom);
@@ -171,6 +196,7 @@ void test_resetting_the_configuration_keeps_the_saved_state() {
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_an_erased_ring_has_no_record);
+    RUN_TEST(test_perform_mode_round_trips_and_conflicts_with_preset_mode);
     RUN_TEST(test_a_saved_state_round_trips_through_a_power_cycle);
     RUN_TEST(test_the_newest_record_wins);
     RUN_TEST(test_successive_records_advance_through_all_slots_and_wrap);

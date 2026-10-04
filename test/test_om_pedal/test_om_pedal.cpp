@@ -179,12 +179,38 @@ void test_holding_a_footswitch_acts_once() {
     TEST_ASSERT_EQUAL_UINT(writes, b.u3.writes.size());
 }
 
+void test_in_perform_mode_a_short_stomp_toggles_and_a_long_hold_selects_the_preset() {
+    FakeEeprom eeprom;
+    Bench b(eeprom);
+    b.boot();
+    b.pedal.store().savePreset(1, "LEAD", 0b11000000);
+    b.event(Event::Mode);
+    b.event(Event::Mode);
+    TEST_ASSERT_EQUAL(Mode::Perform, b.pedal.controller().mode());
+
+    b.stomp(1);  // short: toggles loop 1
+    TEST_ASSERT_EQUAL_HEX8(0b00000001, b.pedal.controller().loopMask());
+
+    b.press(2);
+    b.now += kPerformHoldMs;
+    b.update(false);  // still held
+    TEST_ASSERT_EQUAL_UINT8(1, b.pedal.controller().activePreset());
+    TEST_ASSERT_EQUAL_HEX8(0b11000000, b.pedal.controller().loopMask());
+    TEST_ASSERT_EQUAL_HEX8(0b00000011, b.u2.reg(FakeMcpBus::kOlatB));  // LED7 = GPB1, LED8 = GPB0
+
+    b.release(2);  // letting go changes nothing more
+    TEST_ASSERT_EQUAL_HEX8(0b11000000, b.pedal.controller().loopMask());
+}
+
 void test_the_mode_button_toggles_modes_but_is_ignored_inside_menus() {
     FakeEeprom eeprom;
     Bench b(eeprom);
     b.boot();
     b.event(Event::Mode);
     TEST_ASSERT_EQUAL(Mode::Preset, b.pedal.controller().mode());
+
+    b.event(Event::Mode);
+    TEST_ASSERT_EQUAL(Mode::Perform, b.pedal.controller().mode());
 
     b.event(Event::Mode);
     TEST_ASSERT_EQUAL(Mode::Manual, b.pedal.controller().mode());
@@ -351,6 +377,7 @@ int main() {
     RUN_TEST(test_pressing_again_resets_the_loop_and_turns_the_led_off);
     RUN_TEST(test_holding_a_footswitch_acts_once);
     RUN_TEST(test_the_mode_button_toggles_modes_but_is_ignored_inside_menus);
+    RUN_TEST(test_in_perform_mode_a_short_stomp_toggles_and_a_long_hold_selects_the_preset);
     RUN_TEST(test_footswitches_keep_working_while_a_menu_is_open);
     RUN_TEST(test_a_footswitch_press_keeps_a_menu_from_timing_out);
     RUN_TEST(test_preset_mode_applies_the_saved_loops_to_the_relays_and_leds);

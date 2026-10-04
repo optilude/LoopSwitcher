@@ -24,12 +24,16 @@ public:
     // by this call, bit n for footswitch n.
     uint8_t poll(bool interrupt, uint32_t nowMs);
 
+    // Releases accepted by the latest poll() call, bit n for footswitch n.
+    uint8_t releases() const { return releases_; }
+
     uint32_t readFailures() const { return readFailures_; }
 
 private:
     ControlExpander& expander_;
     uint8_t stable_ = 0;  // accepted state, bit n set while footswitch n is down
     uint8_t locked_ = 0;  // switches inside their lockout
+    uint8_t releases_ = 0;
     uint32_t lockedUntilMs_[8] = {};
     bool recheck_ = false;
     uint32_t recheckAtMs_ = 0;

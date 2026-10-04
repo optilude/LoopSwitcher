@@ -34,7 +34,7 @@ Success: data survives power cycles; corrupted or never-initialized storage is d
 | 171 | 5 | Reserved |
 | 176 | 80 | State ring: 20 records of 4 bytes |
 
-State record: `[seq, loopMask, modePreset, check]`, where `modePreset` bit 7 = preset mode and bits 0 to 2 = active preset, and `check = seq ^ loopMask ^ modePreset ^ 0xA5`. The newest valid record is the one that is ahead of the others in modulo-256 sequence order (`(a - b) mod 256` in 1 to 127). The next record is written to the slot after the newest, with `seq + 1`. Erased cells (`0xFF`) fail the check by construction.
+State record: `[seq, loopMask, modePreset, check]`, where `modePreset` bit 7 = preset mode, bit 6 = perform mode (never together with bit 7) and bits 0 to 2 = active preset, and `check = seq ^ loopMask ^ modePreset ^ 0xA5`. The newest valid record is the one that is ahead of the others in modulo-256 sequence order (`(a - b) mod 256` in 1 to 127). The next record is written to the slot after the newest, with `seq + 1`. Erased cells (`0xFF`) fail the check by construction.
 
 ## Tech Stack
 

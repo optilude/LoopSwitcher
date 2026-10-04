@@ -125,6 +125,7 @@ void test_leaving_preset_mode_does_not_leave_a_stale_loop_on_the_screen() {
 
     rig.controller.onFootswitch(3, 0);  // manual: loop 4 on
     rig.controller.toggleMode(0);       // preset 1 moves the relays
+    rig.controller.toggleMode(0);       // perform
     rig.controller.toggleMode(0);       // back to manual
     s.screen.draw(s.display);
     TEST_ASSERT_TRUE(s.display.shows("MANUAL"));

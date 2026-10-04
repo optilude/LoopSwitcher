@@ -60,7 +60,7 @@ void showNotice() {
 }
 
 void printState() {
-    Serial.print(controller.mode() == Mode::Manual ? F("manual") : F("preset"));
+    Serial.print(controller.mode() == Mode::Manual ? F("manual") : controller.mode() == Mode::Preset ? F("preset") : F("perform"));
     Serial.print(F(" mode, active preset "));
     Serial.print(controller.activePreset() + 1);
     Serial.print(F(", loops 0x"));

@@ -32,9 +32,11 @@ Pedal::BootStatus Pedal::begin(uint32_t nowMs) {
 
 void Pedal::update(bool interrupt, EventQueue& events, uint32_t nowMs) {
     const uint8_t pressed = switches_.poll(interrupt, nowMs);
-    if (pressed != 0) {
+    const uint8_t released = switches_.releases();
+    if (pressed != 0 || released != 0) {
         flow_.noteInput(nowMs);
-        controller_.onFootswitches(pressed, nowMs);
+        if (pressed != 0) controller_.onFootswitches(pressed, nowMs);
+        if (released != 0) controller_.onFootswitchesReleased(released, nowMs);
         stack_.markDirty();
         showNotice(nowMs);
     }
@@ -50,7 +52,10 @@ void Pedal::update(bool interrupt, EventQueue& events, uint32_t nowMs) {
         showNotice(nowMs);
     }
 
-    controller_.tick(nowMs);
+    if (controller_.tick(nowMs)) {
+        stack_.markDirty();
+        showNotice(nowMs);
+    }
     flow_.tick(nowMs);
     stack_.tick(nowMs);
 }

@@ -7,8 +7,9 @@
 #include "preset_management/preset_store.h"
 
 constexpr uint32_t kLedRetryMs = 100;
+constexpr uint32_t kPerformHoldMs = 2000;  // Perform mode: hold this long to select a preset
 
-enum class Mode : uint8_t { Manual, Preset };
+enum class Mode : uint8_t { Manual, Preset, Perform };
 
 // Something the user should be told about; the main loop turns it into a toast.
 enum class Notice : uint8_t { None, Error, DataReset, EmptyPreset };
@@ -32,11 +33,18 @@ public:
     // in switch order; in preset mode only the highest-numbered press is used.
     void onFootswitches(uint8_t pressedMask, uint32_t nowMs);
 
-    // Switches between manual and preset mode. Entering preset mode applies the active preset.
+    // Several footswitches released together. Only Perform mode uses this: a release before
+    // kPerformHoldMs toggles the loop, so the press is not decided until the foot comes off.
+    void onFootswitchesReleased(uint8_t releasedMask, uint32_t nowMs);
+
+    // Cycles manual, preset and perform mode. Entering preset or perform mode applies the active
+    // preset.
     void toggleMode(uint32_t nowMs);
 
-    // Call often: saves the state after the idle delay and retries LED writes that failed.
-    void tick(uint32_t nowMs);
+    // Call often: selects a preset when a Perform-mode press has been held long enough, saves the
+    // state after the idle delay and retries LED writes that failed. Returns true when a preset
+    // was selected or refused, so the screen needs redrawing.
+    bool tick(uint32_t nowMs);
 
     Mode mode() const { return mode_; }
     uint8_t loopMask() const { return loops_.stateMask(); }
@@ -52,6 +60,7 @@ private:
     bool applyMask(uint8_t mask, uint32_t nowMs);
     void toggleLoop(uint8_t loop, uint32_t nowMs);
     void selectPreset(uint8_t slot, uint32_t nowMs);
+    void longPress(uint8_t mask, uint32_t nowMs);
     void updateLeds(uint32_t nowMs);
     void saveState(uint32_t nowMs);
 
@@ -66,4 +75,6 @@ private:
     Notice notice_ = Notice::None;
     bool ledsStale_ = false;
     uint32_t lastLedTryMs_ = 0;
+    uint8_t pending_ = 0;  // Perform mode: footswitches down whose press is not decided yet
+    uint32_t pressedAtMs_[kLoopCount] = {};
 };

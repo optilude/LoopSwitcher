@@ -16,6 +16,8 @@ bool FootswitchInput::begin(uint32_t nowMs) {
 }
 
 uint8_t FootswitchInput::poll(bool interrupt, uint32_t nowMs) {
+    releases_ = 0;
+
     // Clear expired lockouts on every call, so a stale one can never look like the future once the
     // millisecond counter has run for 24 days.
     for (uint8_t i = 0; i < 8; ++i) {
@@ -49,7 +51,11 @@ uint8_t FootswitchInput::poll(bool interrupt, uint32_t nowMs) {
         stable_ ^= bit;
         locked_ |= bit;
         lockedUntilMs_[i] = nowMs + kFootswitchLockoutMs;
-        if (raw & bit) presses |= bit;
+        if (raw & bit) {
+            presses |= bit;
+        } else {
+            releases_ |= bit;
+        }
     }
     return presses;
 }
