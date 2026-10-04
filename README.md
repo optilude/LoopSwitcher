@@ -1,11 +1,11 @@
 # LoopSwitcher
 
-A DIY project to create an eight-loop guitar effects switcher with fully open-source hardware and software.
+A DIY project to create an eight-loop guitar effects switcher with fully open-source hardware and software. Use it to easily turn on or off groups of effects pedals, and to ensure that unused pedals are fully out of the audio path when disengaged. Presets let you designate sets of loops to be active at the same time and quickly toggle between them.
 
 ## Features
 
 - Buffered input (recommended) or true bypass wiring options.
-- Eight effects loops, each with its own foot switch and LED. When a loop is off, the signal bypasses it completely.
+- Eight effects loops, each with its own foot switch and LED. When a loop is off, the signal bypasses it completely. The top jack is "send" and the bottom jack is "return".
 - Eight presets (name plus loop combination) and eight editable loop names, all kept across power cycles.
 - Three modes:
   - **Manual**: footswitch *n* toggles loop *n*.
