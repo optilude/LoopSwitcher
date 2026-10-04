@@ -50,6 +50,10 @@ For each board:
 2. Set the board options. The defaults should suffice.
 3. For assembled boards, enable **PCB Assembly**, then upload the BOM and CPL files. This applies to the Audio PCB. The header pins, relays, and large capacitors are all excluded from the BOM and need to be ordered separately and hand-soldered. There is a chance JLCPCB has changed stock levels and you need to find certain substitutes.
 
+On receipt, they should look like this (here the control PCB parts are positioned but not yet soldered in).
+
+![PCBs](Images/pcbs.jpg)
+
 ## 2. Order the additional parts
 
 These are generally through-hole components and wires that need to be hand-soldered to the PCBs.
@@ -59,6 +63,7 @@ For the control PCB:
 - 1 x [Arduino Nano Every](https://www.amazon.co.uk/dp/B07WWK29XF?ref=nb_sb_ss_w_as-reorder_k0_1_18&amp=&crid=K8FPMY45GMY7&sprefix=arduino%2Bnano%2Bevery&th=1) – the brains of the operation. You probably want one with headers pre-soldered, but note that there won't be enough space for female sockets on the PCB and male pins on the Arduino. You'll need to solder it directly to the board.
 - 1 x [1.3" OLED module](https://www.amazon.co.uk/dp/B07QJ4LGC2?ref=ppx_yo2ov_dt_b_fed_asin_title) - it's important to get one in this form factor, with four pins – GND VCC SCL SCA – in the correct order, using the SSH1106 chip and the I2C interface. (You may find ohers with the same footprint but GND and VCC the other way around, which won't work).
 - 1 x [Bourns PEC11R-4220K-S0024](https://www.rapidonline.com/bourns-pec11r-4220k-s0024-rotary-encoder-robust-compact-high-reliability-08-6435) - a rotary encoder with a click button, used to navigate the menu system.
+- 1 x [knob for the rotary encoder](https://www.taydaelectronics.com/black-micro-knob-7-6x14mm-shaft-6x18t.html) - this one is nice and small, but other options are available!
 - 2 x [C&K 8631ZGD2](https://www.rapidonline.com/c-k-switches-8631zgd2-pushbutton-switch-spst-120v-28v-500ma-panel-mount-08-7116) - subminiature momentary switches, used for the "Mode" and "Back" buttons.
 - 8 x [Panasonic TQ2-L2-5V](https://www.rapidonline.com/panasonic-tq2-l2-5v-1a-5vdc-dpdt-2-coil-latching-pcb-signal-relay-low-profile-60-1308) - the dual-coil latching relays used to switch the loops in and out
 
@@ -99,15 +104,27 @@ You need to solder the Arduino Nano Every to the top of the control PCB. The USB
 
 Next, insert the rotary encoder. It should snap into place. Don't solder it yet - it's important to do a test fit. Remove the nut and washer.
 
-Remove the nuts from the two switches. Try to thread them through the enclosure and fix with the supplied nut. This might not work – the threaded bushing is likely slightly too short. The solution to this is to _carefully_ remove a bit of material from the inside of the enclosure. Place the enclosure upside-down on a soft surface (to avoid scratching off the UV design) and _carefully_ use a 10mm+ metal drill bit to enlarge and deepen the inside of the two small holes for the "back" and "mode" buttons. You want to drill half a mm, then check, then drill more if necessary. You definitely don't want to go all the way through, and if you go too far you'll struggle to insert the legs of the switch into the PCB. Once you are just about able to get the nut on securely, stop. Leave thes switches in the enclosure, with the legs orientated vertically in the way they will insert into the PCB (it doesn't matter which is left or right).
+Remove the nuts from the two switches. Try to thread them through the enclosure and fix with the supplied nut. This might not work – the threaded bushing is likely slightly too short.
+
+The solution to this is to _carefully_ remove a bit of material from the inside of the enclosure. Place the enclosure upside-down on a soft surface (to avoid scratching off the UV design) and _carefully_ use a 10mm+ metal drill bit to enlarge and deepen the inside of the two small holes for the "back" and "mode" buttons. You want to drill half a mm, then check, then drill more if necessary. You definitely don't want to go all the way through, and if you go too far you'll struggle to insert the legs of the switch into the PCB. Once you are just about able to get the nut on securely, stop. Leave thes switches in the enclosure, with the legs orientated vertically in the way they will insert into the PCB (it doesn't matter which is left or right).
+
+![Enclosure drilling to fit switches](Images/enclosure-drillout.jpg)
 
 Next, put the OLED through the holes, but do not solder. If possible, insert short standoffs or other material underneath where the mounting screw holes are to prop it into place. You want to position it so that its top surface is exactly the same height as the height of the rotary encoder. Definitely it should not protrude any taller.
 
+![Control PCB vertical alignment](Images/control-pcb-alignment.jpeg)
+
 Put some electrical tape on the inside of the enclosure where the Arduino will go. This is just in case you accidentally short something when pushing everything into place (it may not be necessary). Now _carefully_ push the rotary encoder through its hole and line up the PCB with the legs of the two switches. They need to go through the PCB pads. Some wiggling may be required, but don't bend them.
+
+![Test fitting](Images/enclosure-testfit-1.jpeg)
 
 Check from the other side that the screen is aligned with its cutout and everything is in place. It might be necessary to take the OLED out and gently bend its legs to move it up or down a milimetre or two, depending on which manufacturer you ordered from.
 
+![Testing fitting](Images/enclosure-testfit-2.jpeg)
+
 Once you are happy everything is in place, solder the switches, rotary, and OLED pins into place whilst the PCB is still in the enclosure. Check multiple times that nothing has moved out of position and be sure that the switch pins are actually touching the PCB pads. The switches will likely protrude slightly from the top of the PCB.
+
+![Test fitting](Images/enclosure-control-position.jpg)
 
 Take everything out of the enclosure. If using header pins, solder these to the _bottom_ of the PCB (this is the only time you'll solder something to the bottom of either PCB). It is a good idea to use angled pins at least for the 9V power. Make a note of which pin is which (there is no silk screen on the bottom) so you don't reverse polarity later and risk blowing up the Arduino or OLED. (The ground connection is towards the outer edge of the board.)
 
@@ -127,9 +144,13 @@ If you want, do the same for the 9V power.
 
 I recommend soldering wires directly to the pads for the audio input and output. You have a choice on the input – there is a pair of pads for the buffered input (i.e. the signal will pass into an always-on buffer), as well as one that bypasses the buffer (so the pedal is "true bypass"). I recommend using the buffered version, as this is likely to preserve your signal better. Solder the other end of the wires to the two isolated jacks (main input, main output). The pad labelled "+" goes to the _tip_ of the jack (furthest in) and the one labelled "-" goes to the sleeve (furthest out). If you have switched jacks, make sure you don't accidentally wire to the switched side.
 
+![Audio PCB through-hole components](Images/audio-pcb-assembled.jpeg)
+
 ### 4.3. Footswitches, LEDs, and power.
 
 Thread the wires of the LED rings through the small holes from the outside, and the footswitches through the large holes from the inside, and secure with the footswitch nut. Be careful not to over-tighten, as the plastic LED ring housings can be crushed. Orient the footswitches in two rows inside.
+
+![Foot switches and LEDs positioned](Images/outboard-positioned.jpeg)
 
 You now need to ensure that one side (it doesn't matter which) of each footswitch is connected to ground, and the other is connected to the correct pin on the row of headers labelled "switches". Similarly, the black wire on each LED ring needs to connect to ground, and the red wire to the corresponding row of headers labelled "LEDs".
 
@@ -138,6 +159,8 @@ One way to do this, is to run a ground bus wire (i.e. a stripped solid-core wire
 For the other side of the footwich, you can use (or make) an 8-way Dupont ribbon cable that connects to the header row and fans out to each switch. This helps ensure the switches are all connected to the correct pins in the correct order. Of course, there's nothing wrong with using eight individual wires either.
 
 Similarly, the red LED wires can be crimped to an 8-way female Dupont conenctor, for use on the LEDs headers.
+
+![Foot switches and LEDs positioned](Images/outboard-wired.jpeg)
 
 Note that if you do it this way, you may have an unused GND pin, since the LED grounds are tied to the ground bus. You do need to ensure the ground bus is connected to one of the GND pins though!
 
@@ -151,6 +174,8 @@ Insert the power jack first. The jack threads in from the outside, but the nut n
 
 Insert the control PCB. Check alignment and then tighten the nuts on the encoder and two switches. Don't over-tigthen, but make sure it is a secure fit. The screen should not move when the buttons are pushed. Confirm orientation and insert the cables to the 9V power. You can connect a 9V battery or power supply briefly to check the screen and controls are working before you proceed further.
 
+![Assembling the power and control PCB (ignore the extra purple wire here!)](Images/assembly-step-1.jpeg)
+
 Note that even in this position, it is possible to insert a USB cable, should you need to re-flash the firmware, but once the audio PCB is inserted, it will be difficult to remove it. It is therefore helpful to test the device with the audio PCB outside the box. If you used Dupont connector jumper wires of suitable length, this should be relatively easy.
 
 Connect the various cables to the audio PCB. Carefully check that everything is in place and look for any shorts or missing connections. You should have:
@@ -162,9 +187,15 @@ Connect the various cables to the audio PCB. Carefully check that everything is 
 - Eight wires running from LED anodes (red wires) to the 8 LED pins. Check that you haven't accidentally connected the first one to the GND pin.
 - Eight wires running from the footswitches to the 8 footswitch pins. Again, confirm the right switch is connected to the numbered pin, noting they run from 8 to 1 left-to-right.
 
+![Connecting the wires to the audio PCB](Images/assembly-step-2.jpeg)
+
 Assuming an initial test looks fine, it's time to insert everything and tighten the outside nuts for the input and output jacks and the eight stacked loop jacks. Do this carefully, as it can be fiddly and you could accidentally bend a header pin or disconnect/snap a wire. You may need to partially insert the audio PCB through the loop jack cutouts, and then push the side jacks into place underneath. Some fiddling will certainly be required.
 
+![Audio PCB and outboard jacks inserted](Images/assembly-step-3.jpeg)
+
 The final step is to put the bottom lid on and connect the unit up. Hopefully everything works! But if not, take your time, check each element carefully. Use a multimeter to test for continuity and look for bad solder joints where you've hand-soldered something.
+
+![Final assembly](Images/assembly-step-4.jpeg)
 
 ## 5. Build and flash the firmware
 
