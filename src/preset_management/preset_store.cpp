@@ -3,6 +3,9 @@
 #include "preset_management/crc16.h"
 
 namespace {
+constexpr uint8_t kBankSelectEnabled = 0x10;
+constexpr uint8_t kProgramChangeEnabled = 0x20;
+constexpr uint8_t kEffectCcEnabled = 0x40;
 
 // Copies `name` into `out` without trailing spaces. Returns false if it is too long or has a
 // character outside printable ASCII. `length` receives the trimmed length.
@@ -43,13 +46,21 @@ void PresetStore::resetConfiguration() {
 }
 
 bool PresetStore::begin() {
-    ring_.scan();
-    lastSaved_ = savedState();
     hasPending_ = false;
     const uint16_t stored = static_cast<uint16_t>(eeprom_.read(kCrcAddr) | (eeprom_.read(kCrcAddr + 1) << 8));
-    if (eeprom_.read(kVersionAddr) == kLayoutVersion && stored == computeConfigCrc()) return true;
+    const uint8_t storedVersion = eeprom_.read(kVersionAddr);
+    if (storedVersion == kLayoutVersion && stored == computeConfigCrc()) {
+        ring_.scan();
+        lastSaved_ = savedState();
+        return true;
+    }
 
     resetConfiguration();
+    if (storedVersion == 0x01) {
+        for (uint16_t addr = kRingAddr; addr < kEepromSize; ++addr) eeprom_.update(addr, 0);
+    }
+    ring_.scan();
+    lastSaved_ = savedState();
     return false;
 }
 
@@ -114,6 +125,44 @@ void PresetStore::presetName(uint8_t slot, char out[kNameMax + 1]) const {
 
 uint8_t PresetStore::presetMask(uint8_t slot) const {
     return presetUsed(slot) ? eeprom_.read(presetBase(slot) + kNameMax) : 0;
+}
+
+PresetMidi PresetStore::presetMidi(uint8_t slot) const {
+    PresetMidi midi{};
+    if (!presetUsed(slot)) return midi;
+
+    const uint16_t base = presetBase(slot) + kNameMax + 1;
+    const uint8_t flags = eeprom_.read(base);
+    midi.channel = flags & 0x0F;
+    midi.bankSelectEnabled = (flags & kBankSelectEnabled) != 0;
+    midi.programChangeEnabled = (flags & kProgramChangeEnabled) != 0;
+    midi.effectCcEnabled = (flags & kEffectCcEnabled) != 0;
+    midi.bankMsb = eeprom_.read(base + 1);
+    midi.bankLsb = eeprom_.read(base + 2);
+    midi.program = eeprom_.read(base + 3);
+    midi.effectCc = eeprom_.read(base + 4);
+    midi.effectValue = eeprom_.read(base + 5);
+    return midi;
+}
+
+bool PresetStore::setPresetMidi(uint8_t slot, const PresetMidi& midi) {
+    if (!presetUsed(slot) || midi.channel > 15 || midi.bankMsb > 127 || midi.bankLsb > 127 || midi.program > 127 ||
+        midi.effectCc > 127 || midi.effectValue > 127) {
+        return false;
+    }
+
+    const uint16_t base = presetBase(slot) + kNameMax + 1;
+    const uint8_t flags = static_cast<uint8_t>(midi.channel | (midi.bankSelectEnabled ? kBankSelectEnabled : 0) |
+                                               (midi.programChangeEnabled ? kProgramChangeEnabled : 0) |
+                                               (midi.effectCcEnabled ? kEffectCcEnabled : 0));
+    eeprom_.update(base, flags);
+    eeprom_.update(base + 1, midi.bankMsb);
+    eeprom_.update(base + 2, midi.bankLsb);
+    eeprom_.update(base + 3, midi.program);
+    eeprom_.update(base + 4, midi.effectCc);
+    eeprom_.update(base + 5, midi.effectValue);
+    writeConfigCrc();
+    return true;
 }
 
 bool PresetStore::savePreset(uint8_t slot, const char* name, uint8_t mask) {

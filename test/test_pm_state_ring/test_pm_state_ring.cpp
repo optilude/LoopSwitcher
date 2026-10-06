@@ -162,7 +162,7 @@ void test_wear_is_spread_evenly() {
     ring.scan();
     for (int i = 0; i < 1000; ++i) ring.append(state(static_cast<uint8_t>(i * 37), (i % 3) == 0, static_cast<uint8_t>(i % 8)));
 
-    TEST_ASSERT_TRUE_MESSAGE(eeprom.maxWritesPerCell() <= 50, "no cell may be written more than 1000/20 times");
+    TEST_ASSERT_TRUE_MESSAGE(eeprom.maxWritesPerCell() <= 112, "no cell may be written more than ceil(1000/9) times");
 }
 
 void test_nothing_outside_the_ring_is_written() {

@@ -50,6 +50,20 @@ void PerformanceController::toggleLoop(uint8_t loop, uint32_t nowMs) {
     saveState(nowMs);
 }
 
+#if LOOPSWITCHER_ENABLE_MIDI
+void PerformanceController::sendPresetMidi(uint8_t slot) {
+    if (midi_ == nullptr) return;
+
+    const PresetMidi midi = store_.presetMidi(slot);
+    if (midi.bankSelectEnabled) {
+        midi_->sendControlChange(midi.channel, 0, midi.bankMsb);
+        midi_->sendControlChange(midi.channel, 32, midi.bankLsb);
+    }
+    if (midi.programChangeEnabled) midi_->sendProgramChange(midi.channel, midi.program);
+    if (midi.effectCcEnabled) midi_->sendControlChange(midi.channel, midi.effectCc, midi.effectValue);
+}
+#endif
+
 void PerformanceController::selectPreset(uint8_t slot, uint32_t nowMs) {
     if (!store_.presetUsed(slot)) {
         notice_ = Notice::EmptyPreset;
@@ -57,6 +71,9 @@ void PerformanceController::selectPreset(uint8_t slot, uint32_t nowMs) {
     }
     if (!applyMask(store_.presetMask(slot), nowMs)) return;
 
+#if LOOPSWITCHER_ENABLE_MIDI
+    sendPresetMidi(slot);
+#endif
     activePreset_ = slot;
     saveState(nowMs);
 }
@@ -126,7 +143,11 @@ void PerformanceController::toggleMode(uint32_t nowMs) {
     } else {
         mode_ = mode_ == Mode::Manual ? Mode::Preset : Mode::Perform;
         if (store_.presetUsed(activePreset_)) {
-            applyMask(store_.presetMask(activePreset_), nowMs);
+            if (applyMask(store_.presetMask(activePreset_), nowMs)) {
+#if LOOPSWITCHER_ENABLE_MIDI
+                sendPresetMidi(activePreset_);
+#endif
+            }
         } else {
             notice_ = Notice::EmptyPreset;
         }

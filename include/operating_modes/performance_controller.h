@@ -4,6 +4,7 @@
 
 #include "loop_switching/loop_switching.h"
 #include "operating_modes/led_output.h"
+#include "operating_modes/midi_output.h"
 #include "preset_management/preset_store.h"
 
 constexpr uint32_t kLedRetryMs = 100;
@@ -20,8 +21,8 @@ class PerformanceController {
 public:
     static constexpr uint8_t kNone = 0xFF;
 
-    PerformanceController(LoopSwitching& loops, PresetStore& store, LedOutput& leds)
-        : loops_(loops), store_(store), leds_(leds) {}
+    PerformanceController(LoopSwitching& loops, PresetStore& store, LedOutput& leds, MidiOutput* midi = nullptr)
+        : loops_(loops), store_(store), leds_(leds), midi_(midi) {}
 
     // Call once after PresetStore::begin(); `dataReset` is true when that call reported defaults.
     // Returns false if the relays could not be driven.
@@ -58,6 +59,9 @@ public:
 private:
     // Applies `mask`; the LEDs follow whatever relays actually moved. Reports an error on failure.
     bool applyMask(uint8_t mask, uint32_t nowMs);
+#if LOOPSWITCHER_ENABLE_MIDI
+    void sendPresetMidi(uint8_t slot);
+#endif
     void toggleLoop(uint8_t loop, uint32_t nowMs);
     void selectPreset(uint8_t slot, uint32_t nowMs);
     void longPress(uint8_t mask, uint32_t nowMs);
@@ -67,6 +71,7 @@ private:
     LoopSwitching& loops_;
     PresetStore& store_;
     LedOutput& leds_;
+    MidiOutput* midi_;
 
     Mode mode_ = Mode::Manual;
     uint8_t activePreset_ = 0;

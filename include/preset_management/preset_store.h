@@ -9,6 +9,18 @@
 
 constexpr uint32_t kIdleSaveMs = 2000;
 
+struct PresetMidi {
+    uint8_t channel = 0;  // 0-15, displayed as MIDI channels 1-16
+    bool bankSelectEnabled = false;
+    bool programChangeEnabled = false;
+    bool effectCcEnabled = false;
+    uint8_t bankMsb = 0;
+    uint8_t bankLsb = 0;
+    uint8_t program = 0;
+    uint8_t effectCc = 0;
+    uint8_t effectValue = 0;
+};
+
 class PresetStore {
 public:
     explicit PresetStore(Eeprom& eeprom) : eeprom_(eeprom), ring_(eeprom) {}
@@ -36,6 +48,9 @@ public:
     bool renamePreset(uint8_t slot, const char* name);
     bool setPresetMask(uint8_t slot, uint8_t mask);
     bool deletePreset(uint8_t slot);
+
+    PresetMidi presetMidi(uint8_t slot) const;
+    bool setPresetMidi(uint8_t slot, const PresetMidi& midi);
 
     // The last saved state, or all loops bypassed, manual mode, preset 0 when none was saved.
     // A state passed to setState() but not yet saved is not included.

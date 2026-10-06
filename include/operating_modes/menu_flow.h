@@ -32,17 +32,36 @@ public:
 
 private:
     static constexpr uint8_t kRowTextSize = kNameMax + 3;  // "n " + name + terminator
-    static constexpr uint8_t kSlotMenuItems = 3;           // SAVE LOOPS, RENAME, DELETE
+    static constexpr uint8_t kSlotMenuItems = LOOPSWITCHER_ENABLE_MIDI ? 4 : 3;
+#if LOOPSWITCHER_ENABLE_MIDI
+    static constexpr uint8_t kMidiMenuItems = 9;
+#endif
 
     struct ItemContext {
         MenuFlow* flow;
         uint8_t index;
     };
-    enum class Edit : uint8_t { LoopLabel, NewPreset, RenamePreset };
+    enum class Edit : uint8_t { LoopLabel, NewPreset, RenamePreset,
+#if LOOPSWITCHER_ENABLE_MIDI
+                                MidiChannel, MidiBankMsb, MidiBankLsb, MidiProgram, MidiEffectCc, MidiEffectValue
+#endif
+    };
+#if LOOPSWITCHER_ENABLE_MIDI
+    struct MidiItemContext {
+        MenuFlow* flow;
+        uint8_t index;
+    };
+#endif
 
     void openPresetList();
     void openLoopList();
     void openSlotMenu(uint8_t slot);
+#if LOOPSWITCHER_ENABLE_MIDI
+    void openMidiMenu();
+    void refreshMidiMenu();
+    void startMidiEdit(Edit kind, uint8_t value);
+    void onMidiSelected(uint8_t item);
+#endif
     void refreshLoopList();
     void refreshPresetList();
     void startEdit(Edit kind, const char* initialText);
@@ -60,6 +79,10 @@ private:
     static void onSlotSave(void* context);
     static void onSlotRename(void* context);
     static void onSlotDelete(void* context);
+#if LOOPSWITCHER_ENABLE_MIDI
+    static void onSlotMidi(void* context);
+    static void onMidiSelectedCallback(void* context);
+#endif
     static void textDone(void* context, const char* text);
     static void textCancel(void* context);
     static void overwriteChoice(void* context, bool yes);
@@ -82,6 +105,12 @@ private:
     Menu loopMenu_{nullptr, 0};
     Menu presetMenu_{nullptr, 0};
     Menu slotMenu_{nullptr, 0};
+#if LOOPSWITCHER_ENABLE_MIDI
+    MenuItem midiItems_[kMidiMenuItems];
+    MidiItemContext midiContexts_[kMidiMenuItems];
+    char midiText_[kMidiMenuItems][24];
+    Menu midiMenu_{nullptr, 0};
+#endif
     TextEntry textEntry_;
     Confirm overwriteConfirm_;
     Confirm deleteConfirm_;

@@ -328,6 +328,31 @@ void test_a_used_slot_menu_offers_save_rename_and_delete() {
     TEST_ASSERT_TRUE(ui.screenShows("DELETE"));
 }
 
+#if LOOPSWITCHER_ENABLE_MIDI
+void test_midi_menu_edits_channel_and_toggles_effect_cc() {
+    FakeEeprom eeprom;
+    Rig rig(eeprom);
+    rig.boot();
+    rig.store.savePreset(0, "LEAD", 0x01);
+    Ui ui(rig);
+
+    openPresetSlot(ui, 0);
+    ui.choose(3);
+    TEST_ASSERT_EQUAL_UINT8(5, ui.stack.depth());
+    TEST_ASSERT_TRUE(ui.screenShows("CHANNEL 1"));
+
+    ui.choose(0);
+    ui.press(Event::Back);
+    ui.type("4");
+    ui.confirmText();
+    TEST_ASSERT_EQUAL_UINT8(3, rig.store.presetMidi(0).channel);
+
+    ui.choose(6);
+    TEST_ASSERT_TRUE(rig.store.presetMidi(0).effectCcEnabled);
+    TEST_ASSERT_TRUE(ui.screenShows("EFFECT CC ON"));
+}
+#endif
+
 void test_the_slot_menu_shows_rename_and_delete_once_a_preset_has_been_saved_into_it() {
     FakeEeprom eeprom;
     Rig rig(eeprom);
@@ -407,7 +432,7 @@ void test_deleting_asks_first_and_empties_the_slot() {
     ui.press(Event::Select);  // NO is the default
     TEST_ASSERT_TRUE(rig.store.presetUsed(1));
 
-    ui.choose(2);
+    ui.press(Event::Select);  // reopen DELETE, which remains highlighted
     ui.press(Event::Left);  // YES
     ui.press(Event::Select);
     TEST_ASSERT_FALSE(rig.store.presetUsed(1));
@@ -498,6 +523,9 @@ int main() {
     RUN_TEST(test_rename_starts_with_the_current_name_and_an_empty_result_is_refused);
     RUN_TEST(test_an_empty_slot_menu_offers_only_save_loops);
     RUN_TEST(test_a_used_slot_menu_offers_save_rename_and_delete);
+#if LOOPSWITCHER_ENABLE_MIDI
+    RUN_TEST(test_midi_menu_edits_channel_and_toggles_effect_cc);
+#endif
     RUN_TEST(test_the_slot_menu_shows_rename_and_delete_once_a_preset_has_been_saved_into_it);
     RUN_TEST(test_the_slot_menu_loses_rename_and_delete_after_the_preset_is_deleted);
     RUN_TEST(test_the_last_character_of_a_name_can_be_confirmed_with_just_a_long_press);

@@ -173,7 +173,7 @@ void test_a_state_change_saved_every_few_seconds_does_not_wear_one_cell_out() {
         now += kIdleSaveMs;
         store.tick(now);
     }
-    TEST_ASSERT_TRUE_MESSAGE(eeprom.maxWritesPerCell() <= 50, "1000 saves must spread over the 20-record ring");
+    TEST_ASSERT_TRUE_MESSAGE(eeprom.maxWritesPerCell() <= 112, "1000 saves must spread over the 9-record ring");
 }
 
 void test_state_saves_never_touch_the_configuration() {

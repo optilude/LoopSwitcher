@@ -29,6 +29,104 @@ void test_in_preset_mode_footswitch_n_applies_preset_n_and_makes_it_active() {
     TEST_ASSERT_EQUAL_UINT8(1, rig.controller.activePreset());
 }
 
+#if LOOPSWITCHER_ENABLE_MIDI
+void test_preset_midi_sends_bank_program_and_effect_cc_in_order() {
+    FakeEeprom eeprom;
+    FakeMidiOutput midi;
+    Rig rig(eeprom, &midi);
+    rig.boot();
+    rig.store.savePreset(0, "CLEAN", 0x01);
+    rig.store.savePreset(1, "LEAD", 0x02);
+    rig.controller.toggleMode(0);
+    midi.messages.clear();
+
+    PresetMidi settings{3, true, true, true, 2, 7, 42, 11, 99};
+    TEST_ASSERT_TRUE(rig.store.setPresetMidi(1, settings));
+    rig.controller.onFootswitch(1, 1);
+
+    TEST_ASSERT_EQUAL_UINT32(4, midi.messages.size());
+    TEST_ASSERT_EQUAL(MidiMessageType::ControlChange, midi.messages[0].type);
+    TEST_ASSERT_EQUAL_UINT8(3, midi.messages[0].channel);
+    TEST_ASSERT_EQUAL_UINT8(0, midi.messages[0].data1);
+    TEST_ASSERT_EQUAL_UINT8(2, midi.messages[0].data2);
+    TEST_ASSERT_EQUAL(MidiMessageType::ControlChange, midi.messages[1].type);
+    TEST_ASSERT_EQUAL_UINT8(32, midi.messages[1].data1);
+    TEST_ASSERT_EQUAL_UINT8(7, midi.messages[1].data2);
+    TEST_ASSERT_EQUAL(MidiMessageType::ProgramChange, midi.messages[2].type);
+    TEST_ASSERT_EQUAL_UINT8(42, midi.messages[2].data1);
+    TEST_ASSERT_EQUAL(MidiMessageType::ControlChange, midi.messages[3].type);
+    TEST_ASSERT_EQUAL_UINT8(11, midi.messages[3].data1);
+    TEST_ASSERT_EQUAL_UINT8(99, midi.messages[3].data2);
+}
+
+void test_preset_midi_is_sent_on_mode_entry_but_not_during_boot() {
+    FakeEeprom eeprom;
+    FakeMidiOutput midi;
+    Rig rig(eeprom, &midi);
+    rig.boot();
+    TEST_ASSERT_EQUAL_UINT32(0, midi.messages.size());
+    rig.store.savePreset(0, "CLEAN", 0x01);
+    TEST_ASSERT_TRUE(rig.store.setPresetMidi(0, PresetMidi{2, false, false, true, 0, 0, 0, 11, 65}));
+
+    rig.controller.toggleMode(0);
+    TEST_ASSERT_EQUAL_UINT32(1, midi.messages.size());
+    TEST_ASSERT_EQUAL(MidiMessageType::ControlChange, midi.messages[0].type);
+    TEST_ASSERT_EQUAL_UINT8(2, midi.messages[0].channel);
+    TEST_ASSERT_EQUAL_UINT8(11, midi.messages[0].data1);
+    TEST_ASSERT_EQUAL_UINT8(65, midi.messages[0].data2);
+
+    midi.messages.clear();
+    rig.controller.toggleMode(1);  // enter Perform, which reapplies the active preset
+    TEST_ASSERT_EQUAL_UINT32(1, midi.messages.size());
+}
+
+void test_preset_midi_can_send_only_program_change() {
+    FakeEeprom eeprom;
+    FakeMidiOutput midi;
+    Rig rig(eeprom, &midi);
+    rig.boot();
+    rig.store.savePreset(0, "PATCH", 0x01);
+    TEST_ASSERT_TRUE(rig.store.setPresetMidi(0, PresetMidi{4, false, true, false, 0, 0, 127, 0, 0}));
+    rig.controller.toggleMode(0);
+
+    TEST_ASSERT_EQUAL_UINT32(1, midi.messages.size());
+    TEST_ASSERT_EQUAL(MidiMessageType::ProgramChange, midi.messages[0].type);
+    TEST_ASSERT_EQUAL_UINT8(4, midi.messages[0].channel);
+    TEST_ASSERT_EQUAL_UINT8(127, midi.messages[0].data1);
+}
+
+void test_empty_preset_does_not_send_midi() {
+    FakeEeprom eeprom;
+    FakeMidiOutput midi;
+    Rig rig(eeprom, &midi);
+    rig.boot();
+    rig.store.savePreset(0, "PATCH", 0x01);
+    TEST_ASSERT_TRUE(rig.store.setPresetMidi(0, PresetMidi{0, false, false, true, 0, 0, 0, 11, 65}));
+    rig.controller.toggleMode(0);
+    midi.messages.clear();
+
+    rig.controller.onFootswitch(1, 1);
+    TEST_ASSERT_EQUAL_UINT32(0, midi.messages.size());
+}
+
+void test_preset_midi_is_not_sent_when_loop_application_fails() {
+    FakeEeprom eeprom;
+    FakeMidiOutput midi;
+    Rig rig(eeprom, &midi);
+    rig.boot();
+    rig.store.savePreset(0, "CLEAN", 0x01);
+    rig.store.savePreset(1, "LEAD", 0x02);
+    TEST_ASSERT_TRUE(rig.store.setPresetMidi(1, PresetMidi{0, false, true, false, 0, 0, 42, 0, 0}));
+    rig.controller.toggleMode(0);
+    midi.messages.clear();
+
+    rig.hw.failEnergizeOnCall = rig.hw.energizeCalls + 1;
+    rig.controller.onFootswitch(1, 1);
+    TEST_ASSERT_EQUAL_UINT32(0, midi.messages.size());
+    TEST_ASSERT_EQUAL_UINT8(0, rig.controller.activePreset());
+}
+#endif
+
 void test_a_preset_with_every_loop_off_switches_everything_off() {
     FakeEeprom eeprom;
     Rig rig(eeprom);
@@ -281,6 +379,13 @@ void test_entering_preset_mode_reports_a_relay_failure_but_still_changes_mode() 
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_in_preset_mode_footswitch_n_applies_preset_n_and_makes_it_active);
+#if LOOPSWITCHER_ENABLE_MIDI
+    RUN_TEST(test_preset_midi_sends_bank_program_and_effect_cc_in_order);
+    RUN_TEST(test_preset_midi_is_sent_on_mode_entry_but_not_during_boot);
+    RUN_TEST(test_preset_midi_can_send_only_program_change);
+    RUN_TEST(test_empty_preset_does_not_send_midi);
+    RUN_TEST(test_preset_midi_is_not_sent_when_loop_application_fails);
+#endif
     RUN_TEST(test_a_preset_with_every_loop_off_switches_everything_off);
     RUN_TEST(test_pressing_the_active_presets_footswitch_again_leaves_its_loops_applied);
     RUN_TEST(test_an_empty_slot_does_nothing_and_reports_it);

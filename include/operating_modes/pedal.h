@@ -27,13 +27,13 @@ public:
         bool controls;      // U2 answered, so the footswitches and LEDs work
     };
 
-    Pedal(I2cBus& bus, Clock& clock, Eeprom& eeprom)
+    Pedal(I2cBus& bus, Clock& clock, Eeprom& eeprom, MidiOutput* midi = nullptr)
         : relays_(bus),
           loops_(relays_, clock),
           expander_(bus),
           switches_(expander_),
           store_(eeprom),
-          controller_(loops_, store_, expander_),
+          controller_(loops_, store_, expander_, midi),
           flow_(stack_, store_, controller_),
           play_(controller_, store_, &MenuFlow::openCallback, &flow_) {}
 

@@ -7,6 +7,7 @@ A DIY project to create an eight-loop guitar effects switcher with fully open-so
 - Buffered input (recommended) or true bypass wiring options.
 - Eight effects loops, each with its own foot switch and LED. When a loop is off, the signal bypasses it completely. The top jack is "send" and the bottom jack is "return".
 - Eight presets (name plus loop combination) and eight editable loop names, all kept across power cycles.
+- Optional per-preset MIDI OUT: channel, Bank Select, Program Change and one effect-level CC, sent when a preset is activated.
 - Three modes:
   - **Manual**: footswitch *n* toggles loop *n*.
   - **Preset**: footswitch *n* recalls preset *n* – a preset is a named collection of loop states.
@@ -84,6 +85,7 @@ Enclosure and outboard components:
 Other parts:
 
 - 2 x [9-pin single-row 2.54mm male headers](https://www.taydaelectronics.com/9-pin-2-54-mm-single-row-pin-header-strip.html) - used for the LED and footswitch connections. You can also solder wires directly to the board, but with headers you can use Dupont wires for the connections, which is much easier.
+- 1 x 3.5 mm TRS jack for MIDI OUT, plus 2 x 220 ohm resistors (1/4 W is ample).
 - 4 x 2-pin single-row 2.54mm male headers. Used for 9V and audio connections, if desired. You can also solder directly to the through-hole pads. You may need angled headers for the control PCB 9V connection.
 - [Dupont jumper wires](https://www.amazon.co.uk/ELEGOO-Multicolored-Compatible-Arduino-Projects-Yellow-White-Green-Red-Black/dp/B01EV70C78/ref=sr_1_2_sspa) - useful for wiring the boards together.
 - Regular wire for the input and output jacks and foot switches.
@@ -206,9 +208,24 @@ Requires [PlatformIO](https://platformio.org) (CLI or the VS Code extension).
 ```sh
 pio run -e nano_every                 # build
 pio run -e nano_every -t upload       # flash over USB
-pio device monitor                    # 115200 baud boot report
+PLATFORMIO_BUILD_FLAGS="-Iinclude -std=gnu++17 -fno-sized-deallocation -DLOOPSWITCHER_ENABLE_MIDI=0" pio run -e nano_every  # build without MIDI OUT
+pio device monitor                    # 115200 baud boot report in a no-MIDI build
 pio test -e native                    # unit tests on the host
 ```
+
+### MIDI OUT wiring
+
+The MIDI-enabled firmware uses the Nano Every's D1/TX hardware UART at 31,250 baud. Wire a **Type-A** TRS jack as follows:
+
+| Nano Every / TRS | Connection |
+|---|---|
+| D1/TX | 220 ohm resistor to TRS Tip (DIN MIDI pin 5) |
+| +5V | 220 ohm resistor to TRS Ring (DIN MIDI pin 4) |
+| Sleeve | DIN MIDI pin 2; handle shield/chassis grounding to suit the jack and enclosure |
+
+This is the MIDI OUT current-loop circuit; no extra active component is required. Confirm that the multi-effects pedal uses Type-A TRS MIDI. Type B needs an adapter or different wiring. D1/TX is also connected to the USB serial interface, so MIDI builds do not print boot text; disconnect the MIDI cable while uploading firmware to avoid sending bootloader traffic to the pedal.
+
+Each preset's `MIDI` menu can independently enable Bank Select (CC0/CC32), Program Change, and one effect CC. When enabled, messages are sent in that order on the preset's MIDI channel. The build-flag command above omits the MIDI transmitter and editor and restores the 115200 baud boot report.
 
 ### Bring-up
 
@@ -227,7 +244,7 @@ The boot report on the serial port of the final firmware says whether storage, r
 ## Usage
 
 - **Mode** cycles Manual, Preset and Perform. **Back** returns from a menu.
-- Press the encoder on the play screen to open the menu: `PRESETS` (save loops, rename, delete) and `LOOP NAMES`.
+- Press the encoder on the play screen to open the menu: `PRESETS` (save loops, rename, delete, and configure MIDI for used presets) and `LOOP NAMES`.
 - To change a preset's loops, set them in Manual mode and save them into its slot.
 
 <!-- TODO: usage walkthrough with images -->

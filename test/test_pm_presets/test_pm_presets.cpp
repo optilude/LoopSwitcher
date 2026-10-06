@@ -39,6 +39,74 @@ void test_save_creates_a_preset_that_survives_a_power_cycle() {
     TEST_ASSERT_EQUAL_HEX8(0b00010110, reloaded.presetMask(2));
 }
 
+void test_preset_midi_settings_survive_a_power_cycle() {
+    FakeEeprom eeprom;
+    PresetMidi expected{15, true, true, true, 127, 64, 126, 74, 100};
+    {
+        PresetStore store(eeprom);
+        store.begin();
+        TEST_ASSERT_TRUE(store.savePreset(2, "MIDI", 0x12));
+        TEST_ASSERT_TRUE(store.setPresetMidi(2, expected));
+    }
+
+    PresetStore reloaded(eeprom);
+    TEST_ASSERT_TRUE(reloaded.begin());
+    const PresetMidi actual = reloaded.presetMidi(2);
+    TEST_ASSERT_EQUAL_UINT8(expected.channel, actual.channel);
+    TEST_ASSERT_EQUAL(expected.bankSelectEnabled, actual.bankSelectEnabled);
+    TEST_ASSERT_EQUAL(expected.programChangeEnabled, actual.programChangeEnabled);
+    TEST_ASSERT_EQUAL(expected.effectCcEnabled, actual.effectCcEnabled);
+    TEST_ASSERT_EQUAL_UINT8(expected.bankMsb, actual.bankMsb);
+    TEST_ASSERT_EQUAL_UINT8(expected.bankLsb, actual.bankLsb);
+    TEST_ASSERT_EQUAL_UINT8(expected.program, actual.program);
+    TEST_ASSERT_EQUAL_UINT8(expected.effectCc, actual.effectCc);
+    TEST_ASSERT_EQUAL_UINT8(expected.effectValue, actual.effectValue);
+}
+
+void test_preset_midi_settings_reject_invalid_values_without_writes() {
+    FakeEeprom eeprom;
+    PresetStore store(eeprom);
+    store.begin();
+    store.savePreset(0, "KEEP", 0x42);
+    eeprom.resetWriteCounts();
+
+    PresetMidi midi{};
+    midi.channel = 16;
+    TEST_ASSERT_FALSE(store.setPresetMidi(0, midi));
+    midi.channel = 0;
+    midi.bankMsb = 128;
+    TEST_ASSERT_FALSE(store.setPresetMidi(0, midi));
+    midi.bankMsb = 0;
+    midi.effectCc = 128;
+    TEST_ASSERT_FALSE(store.setPresetMidi(0, midi));
+    midi.effectCc = 0;
+    midi.effectValue = 128;
+    TEST_ASSERT_FALSE(store.setPresetMidi(0, midi));
+    TEST_ASSERT_EQUAL_UINT32(0, eeprom.totalWrites());
+    TEST_ASSERT_FALSE(store.setPresetMidi(1, midi));
+}
+
+void test_layout_version_change_resets_configuration_and_saved_state() {
+    FakeEeprom eeprom;
+    {
+        PresetStore store(eeprom);
+        store.begin();
+        store.setLoopLabel(0, "KEEP");
+        store.savePreset(0, "KEEP", 0xFF);
+        store.setState(SavedState{0xFF, true, 0, false}, 0);
+        store.flush();
+    }
+
+    eeprom.update(kVersionAddr, 0x01);
+    PresetStore upgraded(eeprom);
+    TEST_ASSERT_FALSE(upgraded.begin());
+    TEST_ASSERT_FALSE(upgraded.presetUsed(0));
+    const SavedState state = upgraded.savedState();
+    TEST_ASSERT_EQUAL_HEX8(0, state.loopMask);
+    TEST_ASSERT_FALSE(state.presetMode);
+    TEST_ASSERT_FALSE(state.performMode);
+}
+
 void test_a_preset_with_every_loop_off_is_still_a_preset() {
     FakeEeprom eeprom;
     PresetStore store(eeprom);
@@ -238,6 +306,7 @@ void test_nothing_outside_the_configuration_region_is_written() {
     FakeEeprom eeprom;
     PresetStore store(eeprom);
     store.begin();
+    eeprom.resetWriteCounts();
     for (uint8_t slot = 0; slot < kPresetCount; ++slot) store.savePreset(slot, "ABCDEFGHIJ", 0xFF);
     store.deletePreset(3);
 
@@ -249,6 +318,9 @@ int main() {
     UNITY_BEGIN();
     RUN_TEST(test_a_fresh_store_has_no_presets);
     RUN_TEST(test_save_creates_a_preset_that_survives_a_power_cycle);
+    RUN_TEST(test_preset_midi_settings_survive_a_power_cycle);
+    RUN_TEST(test_preset_midi_settings_reject_invalid_values_without_writes);
+    RUN_TEST(test_layout_version_change_resets_configuration_and_saved_state);
     RUN_TEST(test_a_preset_with_every_loop_off_is_still_a_preset);
     RUN_TEST(test_save_overwrites_name_and_mask);
     RUN_TEST(test_save_rejects_bad_input_without_touching_storage);

@@ -48,7 +48,7 @@ Prerequisite: `loop-switching` Task 1 (PlatformIO scaffold with `native` and `na
     - [ ] No valid record returns all loops bypassed, manual mode, preset 0
     - [ ] Newest record is chosen correctly across `seq` wraparound (255 to 0)
     - [ ] A record with a bad checksum is skipped
-    - [ ] Successive writes advance through all 20 slots and wrap
+    - [ ] Successive writes advance through all 9 slots and wrap
   - Verify: `pio test -e native`
   - Dependencies: Task 1
   - Files: `src/preset_management/state_ring.cpp`, `include/preset_management/state_ring.h`, `test/test_preset_management/test_state_ring.cpp`

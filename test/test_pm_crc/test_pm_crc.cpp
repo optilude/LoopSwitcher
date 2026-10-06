@@ -67,8 +67,8 @@ void test_out_of_range_access_is_recorded_and_harmless() {
 void test_layout_regions_fit_in_256_bytes_without_overlap() {
     TEST_ASSERT_EQUAL_UINT16(3, kLabelsAddr);
     TEST_ASSERT_EQUAL_UINT16(83, kPresetsAddr);
-    TEST_ASSERT_EQUAL_UINT16(171, kConfigEnd);
-    TEST_ASSERT_EQUAL_UINT16(176, kRingAddr);
+    TEST_ASSERT_EQUAL_UINT16(219, kConfigEnd);
+    TEST_ASSERT_EQUAL_UINT16(220, kRingAddr);
     TEST_ASSERT_EQUAL_UINT16(256, kRingAddr + kRingRecords * kRingRecordSize);
 }
 
