@@ -340,16 +340,49 @@ void test_midi_menu_edits_channel_and_toggles_effect_cc() {
     ui.choose(3);
     TEST_ASSERT_EQUAL_UINT8(5, ui.stack.depth());
     TEST_ASSERT_TRUE(ui.screenShows("CHANNEL 1"));
-
     ui.choose(0);
-    ui.press(Event::Back);
-    ui.type("4");
-    ui.confirmText();
+    TEST_ASSERT_TRUE(ui.screenShows("CHANNEL"));
+    ui.presses(Event::Right, 3);
+    ui.press(Event::Select);
     TEST_ASSERT_EQUAL_UINT8(3, rig.store.presetMidi(0).channel);
+    TEST_ASSERT_EQUAL_UINT8(5, ui.stack.depth());  // back on the MIDI menu
 
     ui.choose(6);
     TEST_ASSERT_TRUE(rig.store.presetMidi(0).effectCcEnabled);
     TEST_ASSERT_TRUE(ui.screenShows("EFFECT CC ON"));
+}
+
+void test_midi_program_editor_steps_the_value_and_wraps() {
+    FakeEeprom eeprom;
+    Rig rig(eeprom);
+    rig.boot();
+    rig.store.savePreset(0, "LEAD", 0x01);
+    Ui ui(rig);
+
+    openPresetSlot(ui, 0);
+    ui.choose(3);
+    ui.choose(5);  // PROGRAM, starting at 1
+    TEST_ASSERT_TRUE(ui.screenShows("1"));
+    ui.press(Event::Left);  // wraps to 128
+    TEST_ASSERT_TRUE(ui.screenShows("128"));
+    ui.press(Event::Select);
+    TEST_ASSERT_EQUAL_UINT8(127, rig.store.presetMidi(0).program);
+}
+
+void test_cancelling_a_midi_value_edit_changes_nothing() {
+    FakeEeprom eeprom;
+    Rig rig(eeprom);
+    rig.boot();
+    rig.store.savePreset(0, "LEAD", 0x01);
+    Ui ui(rig);
+
+    openPresetSlot(ui, 0);
+    ui.choose(3);
+    ui.choose(8);  // CC VALUE
+    ui.presses(Event::Right, 10);
+    ui.press(Event::Back);
+    TEST_ASSERT_EQUAL_UINT8(0, rig.store.presetMidi(0).effectValue);
+    TEST_ASSERT_EQUAL_UINT8(5, ui.stack.depth());
 }
 #endif
 
@@ -525,6 +558,8 @@ int main() {
     RUN_TEST(test_a_used_slot_menu_offers_save_rename_and_delete);
 #if LOOPSWITCHER_ENABLE_MIDI
     RUN_TEST(test_midi_menu_edits_channel_and_toggles_effect_cc);
+    RUN_TEST(test_midi_program_editor_steps_the_value_and_wraps);
+    RUN_TEST(test_cancelling_a_midi_value_edit_changes_nothing);
 #endif
     RUN_TEST(test_the_slot_menu_shows_rename_and_delete_once_a_preset_has_been_saved_into_it);
     RUN_TEST(test_the_slot_menu_loses_rename_and_delete_after_the_preset_is_deleted);

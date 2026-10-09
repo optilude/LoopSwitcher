@@ -3,7 +3,6 @@
 namespace {
 const char kCharset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -.+/#";
 constexpr uint8_t kCharsetSize = sizeof(kCharset) - 1;
-constexpr uint8_t kPositions = kCharsetSize + 1;  // "no character" plus the set
 constexpr uint8_t kTextY = 8;
 constexpr uint8_t kHintY = 48;
 }  // namespace
@@ -18,15 +17,23 @@ void TextEntry::reset(const char* initial) {
     position_ = 0;
 }
 
-char TextEntry::workingChar() const { return position_ == 0 ? '\0' : kCharset[position_ - 1]; }
+char TextEntry::workingChar() const {
+    return position_ == 0 ? '\0' : kCharset[position_ - 1];
+}
 
 bool TextEntry::handle(Event event) {
     switch (event) {
         case Event::Right:
-            if (length_ < kTextMax) position_ = static_cast<uint8_t>((position_ + 1) % kPositions);
+            if (length_ < kTextMax) {
+                const uint8_t positions = static_cast<uint8_t>(kCharsetSize + 1);
+                position_ = static_cast<uint8_t>((position_ + 1) % positions);
+            }
             return true;
         case Event::Left:
-            if (length_ < kTextMax) position_ = static_cast<uint8_t>((position_ + kPositions - 1) % kPositions);
+            if (length_ < kTextMax) {
+                const uint8_t positions = static_cast<uint8_t>(kCharsetSize + 1);
+                position_ = static_cast<uint8_t>((position_ + positions - 1) % positions);
+            }
             return true;
         case Event::Select:
             if (position_ != 0 && length_ < kTextMax) {

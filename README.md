@@ -55,6 +55,8 @@ On receipt, they should look like this (here the control PCB parts are positione
 
 ![PCBs](Images/pcbs.jpg)
 
+**Note*: The images in this guide currently do not include the MIDI output pins or TRS socket, as this was added in a subsequent revision.
+
 ## 2. Order the additional parts
 
 These are generally through-hole components and wires that need to be hand-soldered to the PCBs.
@@ -66,10 +68,11 @@ For the control PCB:
 - 1 x [Bourns PEC11R-4220K-S0024](https://www.rapidonline.com/bourns-pec11r-4220k-s0024-rotary-encoder-robust-compact-high-reliability-08-6435) - a rotary encoder with a click button, used to navigate the menu system.
 - 1 x [knob for the rotary encoder](https://www.taydaelectronics.com/black-micro-knob-7-6x14mm-shaft-6x18t.html) - this one is nice and small, but other options are available!
 - 2 x [C&K 8631ZGD2](https://www.rapidonline.com/c-k-switches-8631zgd2-pushbutton-switch-spst-120v-28v-500ma-panel-mount-08-7116) - subminiature momentary switches, used for the "Mode" and "Back" buttons.
-- 8 x [Panasonic TQ2-L2-5V](https://www.rapidonline.com/panasonic-tq2-l2-5v-1a-5vdc-dpdt-2-coil-latching-pcb-signal-relay-low-profile-60-1308) - the dual-coil latching relays used to switch the loops in and out
+- 1 x [3.5mm TRS socket](https://www.taydaelectronics.com/22665-dup-black-wqp-wqp518ma-3-5mm-mono-phone-jack-with-nut.html) - used for the MIDI output; you can skip this if you don't want MIDI.
 
 For the audio PCB:
 
+- 8 x [Panasonic TQ2-L2-5V](https://www.rapidonline.com/panasonic-tq2-l2-5v-1a-5vdc-dpdt-2-coil-latching-pcb-signal-relay-low-profile-60-1308) - the dual-coil latching relays used to switch the loops in and out
 - 2 x [470uF 10x16mm radial electrolytic capacitors](https://www.taydaelectronics.com/470uf-35v-105c-jrb-radial-electrolytic-capacitor.html) - used for power regulation
 - 2 x [10uF 5x11mm radial electrolytic capacitors](https://www.taydaelectronics.com/10uf-25v-105c-jrb-radial-electrolytic-capacitor-5x11mm.html) - used as part of the audio buffer circuit
 - 1 x [TL072CP dual op-amp](https://www.taydaelectronics.com/tl072-low-noise-j-fet-dual-op-amp-ic.html) and a suitable [PDIP-8 socket](https://www.taydaelectronics.com/8-pin-dip-ic-socket-adaptor-solder-type.html) - again for the audio buffer circuit
@@ -94,7 +97,7 @@ Other parts:
 
 1. Use the [Tayda Drill Tool](https://drill.taydakits.com) to create a 1590D enclosure (make sure you don't use a 1590DD!). Black Matt Sand texture will work well if you plan to use the included UV design template.
 2. Add the drilling option and upload [Tayda/35910_1590D_loop-switcher.txt](Tayda/35910_1590D_loop-switcher.txt) as the drill template. You can also use [this link](https://drill.taydakits.com/box-designs/new?public_key=TldsdmsrbC9LejlTRU5uY0tKVXJZUT09Cg==).
-3. You can create your own design, or use the [UV design template](Tayda/Loop%20switcher.pdf) included here. Make sure you add options for white and the "matte" varnish/gloss overcoat.
+3. You can create your own design, or use the [UV design template](Tayda/Loop%20switcher.pdf) included here. Make sure you apply a white undercoat and the "matte" varnish/gloss overcoat.
 
 ## 4. Assemble
 
@@ -129,6 +132,8 @@ Once you are happy everything is in place, solder the switches, rotary, and OLED
 ![Test fitting](Images/enclosure-control-position.jpg)
 
 Take everything out of the enclosure. If using header pins, solder these to the _bottom_ of the PCB (this is the only time you'll solder something to the bottom of either PCB). It is a good idea to use angled pins at least for the 9V power. Make a note of which pin is which (there is no silk screen on the bottom) so you don't reverse polarity later and risk blowing up the Arduino or OLED. (The ground connection is towards the outer edge of the board.)
+
+MIDI out support is optional (you can disable it in the firmware). If you are using it, insert two 220 ohm resistors in R1 and R2 on the board and add an (angled) three-pin male header to H3 on the underside. H3 is already after these resistors, so do not add another pair when wiring from H3.
 
 At this point, you can connect the PCB via USB and flash the firmware (see below). The menu system should work (but may display some error messages since it won't be communicating with the relays or switches).
 
@@ -168,13 +173,19 @@ Note that if you do it this way, you may have an unused GND pin, since the LED g
 
 For the 9V power socket, ensure you know which side is ground and which is +9V, and solder in two wires to each. If using header pins, use Dupont wires and keep them in two pairs so you don't get them mixed up. Use sensible colours to distinguish ground from +9V. You don't want to reverse them!
 
+For the MIDI socket (if using), connect three wires to the ring, tip, and sleeve. The tip carries TX, the ring carries +5V, and the sleeve is ground. H3's TX and +5V pins are already resistor-limited by R1 and R2.
+
 ### 4.4. Putting it all together
 
 With all the elements soldered, it is worth using a multimeter to run suitable continuity checks. Look for shorts and any cold solder joints or missing connections.
 
 Insert the power jack first. The jack threads in from the outside, but the nut needs to run over the wires and in from the back. Tighten it in place, but be careful not to ruin the plastic thread. Be certain you know which wires are ground and which are +9V.
 
+Insert the MIDI socket (3.5mm TRS).
+
 Insert the control PCB. Check the alignment and then tighten the nuts on the encoder and two switches. Don't overtighten, but make sure it is secure. The screen should not move when the buttons are pushed. Confirm the orientation and connect the 9V power cables. You can connect a 9V battery or power supply briefly to check that the screen and controls are working before you proceed further.
+
+Connect the wires from the MIDI socket (if using). The pins are GND (square pad), which goes the TRS _sleeve_ (furthest out), +5V (middle) which goes to the TRS _ring_ (middle), and TX, which goes to the TRS _tip_ (furthest inside the enclosure).
 
 ![Assembling the power and control PCB (ignore the extra purple wire here!)](Images/assembly-step-1.jpeg)
 
@@ -223,7 +234,7 @@ The MIDI-enabled firmware uses the Nano Every's D1/TX hardware UART at 31,250 ba
 | +5V | 220 ohm resistor to TRS Ring (DIN MIDI pin 4) |
 | Sleeve | DIN MIDI pin 2; handle shield/chassis grounding to suit the jack and enclosure |
 
-This is the MIDI OUT current-loop circuit; no extra active component is required. Confirm that the multi-effects pedal uses Type-A TRS MIDI. Type B needs an adapter or different wiring. D1/TX is also connected to the USB serial interface, so MIDI builds do not print boot text; disconnect the MIDI cable while uploading firmware to avoid sending bootloader traffic to the pedal.
+This is the MIDI OUT current-loop circuit; no extra active component is required. The table describes wiring from raw Nano pins. On the 2026-10-06 control PCB, use H3's GND, +5V, and TX pins directly for Sleeve, Ring, and Tip: R1/R2 are already in series, so do not add external resistors as well. Confirm that the multi-effects pedal uses Type-A TRS MIDI. Type B needs an adapter or different wiring. D1/TX is also connected to the USB serial interface, so MIDI builds do not print boot text; disconnect the MIDI cable while uploading firmware to avoid sending bootloader traffic to the pedal.
 
 Each preset's `MIDI` menu can independently enable Bank Select (CC0/CC32), Program Change, and one effect CC. When enabled, messages are sent in that order on the preset's MIDI channel. The build-flag command above omits the MIDI transmitter and editor and restores the 115200 baud boot report.
 

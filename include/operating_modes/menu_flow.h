@@ -6,6 +6,7 @@
 #include "preset_management/preset_store.h"
 #include "ui_framework/confirm.h"
 #include "ui_framework/menu.h"
+#include "ui_framework/number_entry.h"
 #include "ui_framework/screen_stack.h"
 #include "ui_framework/text_entry.h"
 
@@ -41,12 +42,9 @@ private:
         MenuFlow* flow;
         uint8_t index;
     };
-    enum class Edit : uint8_t { LoopLabel, NewPreset, RenamePreset,
+    enum class Edit : uint8_t { LoopLabel, NewPreset, RenamePreset };
 #if LOOPSWITCHER_ENABLE_MIDI
-                                MidiChannel, MidiBankMsb, MidiBankLsb, MidiProgram, MidiEffectCc, MidiEffectValue
-#endif
-    };
-#if LOOPSWITCHER_ENABLE_MIDI
+    enum class MidiField : uint8_t { Channel, BankMsb, BankLsb, Program, EffectCc, EffectValue };
     struct MidiItemContext {
         MenuFlow* flow;
         uint8_t index;
@@ -59,8 +57,9 @@ private:
 #if LOOPSWITCHER_ENABLE_MIDI
     void openMidiMenu();
     void refreshMidiMenu();
-    void startMidiEdit(Edit kind, uint8_t value);
+    void startMidiEdit(MidiField field, const char* title, uint8_t value, uint8_t min, uint8_t max);
     void onMidiSelected(uint8_t item);
+    void onNumberDone(uint8_t value);
 #endif
     void refreshLoopList();
     void refreshPresetList();
@@ -82,9 +81,10 @@ private:
 #if LOOPSWITCHER_ENABLE_MIDI
     static void onSlotMidi(void* context);
     static void onMidiSelectedCallback(void* context);
+    static void numberDone(void* context, uint8_t value);
 #endif
     static void textDone(void* context, const char* text);
-    static void textCancel(void* context);
+    static void popScreen(void* context);
     static void overwriteChoice(void* context, bool yes);
     static void deleteChoice(void* context, bool yes);
 
@@ -110,6 +110,8 @@ private:
     MidiItemContext midiContexts_[kMidiMenuItems];
     char midiText_[kMidiMenuItems][24];
     Menu midiMenu_{nullptr, 0};
+    NumberEntry numberEntry_;
+    MidiField midiField_ = MidiField::Channel;
 #endif
     TextEntry textEntry_;
     Confirm overwriteConfirm_;

@@ -18,14 +18,14 @@ constexpr uint8_t kIntSwitchPin = 2;  // INT_SWITCH, active low from U2's INTA
 class SerialMidiOutput final : public MidiOutput {
 public:
     void sendControlChange(uint8_t channel, uint8_t controller, uint8_t value) override {
-        Serial.write(static_cast<uint8_t>(0xB0 | channel));
-        Serial.write(controller);
-        Serial.write(value);
+        Serial1.write(static_cast<uint8_t>(0xB0 | channel));
+        Serial1.write(controller);
+        Serial1.write(value);
     }
 
     void sendProgramChange(uint8_t channel, uint8_t program) override {
-        Serial.write(static_cast<uint8_t>(0xC0 | channel));
-        Serial.write(program);
+        Serial1.write(static_cast<uint8_t>(0xC0 | channel));
+        Serial1.write(program);
     }
 };
 
@@ -77,7 +77,7 @@ void setup() {
     watchdogStart();  // from here a stuck bus resets the unit instead of freezing it
 
 #if LOOPSWITCHER_ENABLE_MIDI
-    Serial.begin(31250);
+    Serial1.begin(31250);  // on the Nano Every, Serial is USB only; Serial1 drives the TX pin (D1)
 #else
     Serial.begin(115200);
 #endif
