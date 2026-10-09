@@ -2,6 +2,8 @@
 
 A DIY project to create an eight-loop guitar effects switcher with fully open-source hardware and software. Use it to easily turn on or off groups of effects pedals, and to ensure that unused pedals are fully out of the audio path when disengaged. Presets let you designate sets of loops to be active at the same time and quickly toggle between them.
 
+See demo here: https://www.youtube.com/watch?v=CbhQKo3Hnmo
+
 ## Features
 
 - Buffered input (recommended) or true bypass wiring options.
@@ -69,6 +71,7 @@ For the control PCB:
 - 1 x [knob for the rotary encoder](https://www.taydaelectronics.com/black-micro-knob-7-6x14mm-shaft-6x18t.html) - this one is nice and small, but other options are available!
 - 2 x [C&K 8631ZGD2](https://www.rapidonline.com/c-k-switches-8631zgd2-pushbutton-switch-spst-120v-28v-500ma-panel-mount-08-7116) - subminiature momentary switches, used for the "Mode" and "Back" buttons.
 - 1 x [3.5mm TRS socket](https://www.taydaelectronics.com/22665-dup-black-wqp-wqp518ma-3-5mm-mono-phone-jack-with-nut.html) - used for the MIDI output; you can skip this if you don't want MIDI.
+- 2 x [220r resistors](https://www.taydaelectronics.com/resistor-220-ohm-1-4w-1-metal-film-pkg-of-10.html) - used in the MIDI output circuit.
 
 For the audio PCB:
 
@@ -224,20 +227,6 @@ pio device monitor                    # 115200 baud boot report in a no-MIDI bui
 pio test -e native                    # unit tests on the host
 ```
 
-### MIDI OUT wiring
-
-The MIDI-enabled firmware uses the Nano Every's D1/TX hardware UART at 31,250 baud. Wire a **Type-A** TRS jack as follows:
-
-| Nano Every / TRS | Connection |
-|---|---|
-| D1/TX | 220 ohm resistor to TRS Tip (DIN MIDI pin 5) |
-| +5V | 220 ohm resistor to TRS Ring (DIN MIDI pin 4) |
-| Sleeve | DIN MIDI pin 2; handle shield/chassis grounding to suit the jack and enclosure |
-
-This is the MIDI OUT current-loop circuit; no extra active component is required. The table describes wiring from raw Nano pins. On the 2026-10-06 control PCB, use H3's GND, +5V, and TX pins directly for Sleeve, Ring, and Tip: R1/R2 are already in series, so do not add external resistors as well. Confirm that the multi-effects pedal uses Type-A TRS MIDI. Type B needs an adapter or different wiring. D1/TX is also connected to the USB serial interface, so MIDI builds do not print boot text; disconnect the MIDI cable while uploading firmware to avoid sending bootloader traffic to the pedal.
-
-Each preset's `MIDI` menu can independently enable Bank Select (CC0/CC32), Program Change, and one effect CC. When enabled, messages are sent in that order on the preset's MIDI channel. The build-flag command above omits the MIDI transmitter and editor and restores the 115200 baud boot report.
-
 ### Bring-up
 
 Before flashing the full firmware, check the hardware step by step with the test sketches. Each is a PlatformIO environment, flashed with `pio run -e <env> -t upload` and driven from the serial monitor at 115200 baud.
@@ -257,8 +246,6 @@ The boot report on the serial port of the final firmware says whether storage, r
 - **Mode** cycles Manual, Preset and Perform. **Back** returns from a menu.
 - Press the encoder on the play screen to open the menu: `PRESETS` (save loops, rename, delete, and configure MIDI for used presets) and `LOOP NAMES`.
 - To change a preset's loops, set them in Manual mode and save them into its slot.
-
-<!-- TODO: usage walkthrough with images -->
 
 ## Further reading
 
